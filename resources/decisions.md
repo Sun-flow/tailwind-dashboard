@@ -90,3 +90,35 @@
 - **Rationale**: The same decisions were written in five or six files that contradicted each other (card padding, breakpoints, the KPI set, "no navigation", the Charts.css URL, the no-inline-style rule). Each contradiction caused visual drift. Contradictions settled in the spec: base/`md:`/`lg:` breakpoints only; the KPI cards follow the brief's Revenue / Volume / Engagement / Performance categories; inline `style` is allowed only for Charts.css data values; the page renders from JS (no no-JS requirement); dark by default unless the user saved light; commissions only (no YouTube ad or Twitch subscription revenue yet); trends compare against last month.
 - **Alternatives considered**: patching each conflicting file in place (rejected: the duplication would drift again); semantic `@theme` colour tokens instead of `dark:` pairs (deferred: the code already uses pairs consistently).
 - **Status**: Accepted (2026-10-20). Supersedes the OS-preference first-load note in the archived accessibility rule.
+
+---
+
+### [2026-10-20] Drivers and Details build-out
+- **Decision**: Build the rest of the Drivers and Details blocks (spec §8). Activity and engagement are normalised onto shared columns in the generator (`derived.activityByPlatform`, `derived.interactionsByPlatform`), with `null` for "doesn't apply". Top lists, ranked by commission, and improvement opportunities are also generated (`derived.rankings`, `derived.opportunities`). Alerts use a red / amber / gray severity pill, and ROI is shown as `2.8x`.
+- **Rationale**: Platforms name content and interactions differently (X replies vs comments, Twitch chat), so mapping them in the generator keeps `app.js` free of business logic. Campaigns are ranked by commission rather than ROI because tiny Twitch tests ($33 spend) top any ROI ranking. Amber gives "medium" alerts a colour that isn't read as a trend direction.
+- **Alternatives considered**: stacked multi-colour activity and engagement bars (rejected: breaks "one series colour per chart" and needs a legend); a sparse activity table (tried, rejected: mostly dashes and it scrolled in a half-width card).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Sales funnel drawn as linear bars, overall and per platform
+- **Decision**: The funnel is a full-width card above the Drivers grid. It shows overall impressions → link clicks → conversions as linear Charts.css bars labelled with raw values and step rates, then one chart per step across platforms, then a table of each platform's step rates. Non-zero bars are at least 2px wide.
+- **Rationale**: mae wants the size of each drop visible as a picture, even when the smallest step is a sliver, as long as the labels give the exact numbers. Per-step charts with their own scale keep every platform's bar readable, and the table gives the per-platform drop-off.
+- **Alternatives considered**: a stage list with numbers only (first version; rejected by mae as too little visual information); a log scale (rejected: understates the drop); one mini funnel per platform on a shared scale (rejected: clicks and conversions would be slivers on every platform, so platforms couldn't be compared).
+- **Status**: Superseded by [Sales funnel as 100% stacked bars].
+
+---
+
+### [2026-10-20] Sales funnel as 100% stacked bars
+- **Decision**: Each platform (and "All platforms") gets one horizontal bar that is 100% of its impressions. The bar is split into bought, clicked but didn't buy, and saw but didn't click, using one indigo hue (darkest = furthest step) and neutral gray for "didn't click". `derived.funnelMix` holds the shares, which an invariant checks sum to 100. The per-step "Each step by platform" charts and the step-rate table stay underneath.
+- **Rationale**: mae's reference was a 100% stacked bar chart. The funnel steps are nested (a buyer also clicked and saw), so the three buckets partition impressions and a part-to-whole bar is truthful. mae asked to keep the per-step charts: the stacked bars show the drop-off within each platform, the per-step charts compare platforms at each step. One hue keeps the steps reading as an order, not as unrelated categories.
+- **Alternatives considered**: linear bars per step (the previous version; replaced at mae's request); a zoomed bar of clicks only (not built yet: it would make the bought/clicked split easier to see, but the whole-funnel framing is what mae asked for).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Rank campaigns by commission and by ROI with a minimum spend
+- **Decision**: Top performers lists campaigns twice: by commission, and by ROI among campaigns that spent at least the median (`derived.roiMinSpend`, $1,884 with the default seed).
+- **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $34 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
+- **Alternatives considered**: commission only (hides efficiency); ROI only (tiny tests win); a fixed dollar threshold (rejected: the median adapts if the data changes).
+- **Status**: Accepted by mae (2026-10-20). Open question: ROI is computed on sales revenue; if campaign spend is the creator's own money, it should use commission instead.

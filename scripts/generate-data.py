@@ -501,7 +501,116 @@ def build(rng: random.Random, seed: int) -> dict:
             if k.startswith("_"):
                 del p[k]
 
+    # X has no content count in its extension. Draw it from its own RNG so the
+    # values above stay byte-identical for the existing seed.
+    extra_rng = random.Random(seed * 31 + 7)
+    for p in data["platforms"]:
+        if p["id"] == "x":
+            p["postsCount"] = extra_rng.randint(150, 400)
+
+    _driver_rollups(data)
     return data
+
+
+def _driver_rollups(data: dict) -> None:
+    """Driver and detail rollups (design-spec §8), so renderers stay dumb.
+
+    Platforms report activity and interactions under different names. These
+    rollups map them onto one shared set of columns; None means "not
+    applicable on this platform" and renders as a dash.
+    """
+    d = data["derived"]
+    pl = {p["id"]: p for p in data["platforms"]}
+
+    # Activity: posts, stories, reels/shorts, long videos, live streams.
+    activity_map = {
+        "instagram": {"stories": "storiesCount", "shorts": "reelsCount"},
+        "youtube": {"shorts": "shortsCount", "videos": "videosCount"},
+        "tiktok": {"shorts": "postsCount"},
+        "x": {"posts": "postsCount"},
+        "twitch": {"streams": "streamCount"},
+    }
+    d["activityByPlatform"] = {}
+    for pl_id, fields in activity_map.items():
+        row = {k: None for k in ("posts", "stories", "shorts", "videos", "streams")}
+        for col, src in fields.items():
+            row[col] = pl[pl_id][src]
+        row["total"] = sum(v for v in row.values() if v is not None)
+        d["activityByPlatform"][pl_id] = row
+
+    # Interactions: likes, comments, shares, saves.
+    interaction_map = {
+        "instagram": {"likes": "likes", "comments": "comments", "shares": "shares", "saves": "saves"},
+        "youtube": {"likes": "likes", "comments": "comments", "shares": "shares"},
+        "tiktok": {"likes": "likes", "comments": "comments", "shares": "shares", "saves": "saves"},
+        "x": {"likes": "likes", "comments": "replies", "shares": "reposts", "saves": "bookmarks"},
+        "twitch": {"comments": "chatMessages"},
+    }
+    d["interactionsByPlatform"] = {}
+    for pl_id, fields in interaction_map.items():
+        row = {k: None for k in ("likes", "comments", "shares", "saves")}
+        for col, src in fields.items():
+            row[col] = pl[pl_id]["engagement"].get(src, 0)
+        d["interactionsByPlatform"][pl_id] = row
+
+    # Funnel mix: every impression ends in exactly one bucket, so the three
+    # shares sum to 100 (conversions are a subset of clicks, clicks of impressions).
+    def mix(impressions, clicks, conversions):
+        return {
+            "impressions": impressions,
+            "linkClicks": clicks,
+            "conversions": conversions,
+            "clickedPct": round(clicks / impressions * 100, 4),
+            "boughtPct": round(conversions / impressions * 100, 4),
+            "clickedOnlyPct": round((clicks - conversions) / impressions * 100, 4),
+            "viewedOnlyPct": round((impressions - clicks) / impressions * 100, 4),
+        }
+    d["funnelMix"] = {"all": mix(d["totalImpressions"], d["totalLinkClicks"], d["totalConversions"])}
+    for p in data["platforms"]:
+        d["funnelMix"][p["id"]] = mix(p["impressions"], p["linkClicks"], p["conversions"])
+
+    # Top lists: ids ranked best first. ROI is only ranked for campaigns with at
+    # least median spend; a $33 test's ratio swings on a single sale.
+    spends = sorted(c["spend"] for c in data["campaigns"])
+    median_spend = spends[len(spends) // 2]
+    d["roiMinSpend"] = median_spend
+    d["rankings"] = {
+        "products": [p["id"] for p in sorted(data["products"], key=lambda x: -x["commission"])],
+        "platforms": [p["id"] for p in sorted(data["platforms"], key=lambda x: -x["commission"])],
+        "campaigns": [c["id"] for c in sorted(data["campaigns"], key=lambda x: -x["commission"])],
+        "campaignsByRoi": [c["id"] for c in sorted((c for c in data["campaigns"] if c["spend"] >= median_spend),
+                                                   key=lambda x: -x["roi"])],
+    }
+
+    # Improvement opportunities: one short, data-backed suggestion each.
+    total_reach = sum(p["reach"] for p in data["platforms"])
+    total_clicks = d["totalLinkClicks"]
+    opps = []
+    big = [p for p in data["platforms"] if p["reach"] >= total_reach * 0.1]
+    weak_ctr = min(big, key=lambda p: p["ctr"])
+    opps.append({
+        "platformId": weak_ctr["id"],
+        "message": f"{weak_ctr['name']} reaches {weak_ctr['reach'] / 1000:.0f}K people but only "
+                   f"{weak_ctr['ctr']:.1f}% click through (vs {d['overallCtr']:.1f}% overall). "
+                   f"Pin the product link to top posts.",
+    })
+    best_conv = max(data["platforms"], key=lambda p: p["conversionRate"])
+    opps.append({
+        "platformId": best_conv["id"],
+        "message": f"{best_conv['name']} converts best ({best_conv['conversionRate']:.1f}%) but sends only "
+                   f"{best_conv['linkClicks'] / total_clicks * 100:.1f}% of link clicks. "
+                   f"Mention the shop link more often.",
+    })
+    worst_cmp = min(data["campaigns"], key=lambda c: c["roi"])
+    # Only compare against campaigns with real spend; tiny tests inflate ROI.
+    best_cmp = [c for c in data["campaigns"] if c["id"] == d["rankings"]["campaignsByRoi"][0]][0]
+    opps.append({
+        "campaignId": worst_cmp["id"],
+        "message": f"{worst_cmp['name']} returned {worst_cmp['roi']:.1f}x. Shift budget toward "
+                   f"{PLATFORM_BY_ID[best_cmp['platformId']]['name']} pushes like {best_cmp['name']} "
+                   f"({best_cmp['roi']:.1f}x).",
+    })
+    d["opportunities"] = opps
 
 
 def _platform_extensions(platform: dict, aud: dict, rng: random.Random) -> dict:
@@ -637,7 +746,25 @@ def run_invariants(data: dict) -> bool:
     check(len(data["alerts"]) >= 1, "at least one alert present")
     check(data["derived"]["topProduct"] in prod_by_id, "derived.topProduct valid")
     check(data["derived"]["topPlatform"] in pl_by_id, "derived.topPlatform valid")
-    # 5. finite numbers throughout
+    # 5. driver and detail rollups
+    d = data["derived"]
+    check(set(d["activityByPlatform"]) == set(pl_by_id), "derived.activityByPlatform covers every platform")
+    check(set(d["interactionsByPlatform"]) == set(pl_by_id), "derived.interactionsByPlatform covers every platform")
+    check(all(r["total"] > 0 for r in d["activityByPlatform"].values()), "every platform has activity")
+    check(sorted(d["rankings"]["products"]) == sorted(prod_by_id), "rankings.products lists every product")
+    check(sorted(d["rankings"]["platforms"]) == sorted(pl_by_id), "rankings.platforms lists every platform")
+    check(len(d["rankings"]["campaigns"]) == len(data["campaigns"]), "rankings.campaigns lists every campaign")
+    check(d["rankings"]["platforms"][0] == d["topPlatform"], "rankings.platforms starts with topPlatform")
+    check(len(d["opportunities"]) >= 1, "at least one opportunity present")
+    roi_ids = d["rankings"]["campaignsByRoi"]
+    check(len(roi_ids) >= 3, "rankings.campaignsByRoi has at least 3 campaigns")
+    check(all(c["spend"] >= d["roiMinSpend"] for c in data["campaigns"] if c["id"] in roi_ids),
+          "rankings.campaignsByRoi only counts campaigns at or above roiMinSpend")
+    for key, m in d["funnelMix"].items():
+        check(m["conversions"] <= m["linkClicks"] <= m["impressions"], f"funnelMix {key} steps only shrink")
+        check(abs(m["boughtPct"] + m["clickedOnlyPct"] + m["viewedOnlyPct"] - 100) < 0.01,
+              f"funnelMix {key} shares sum to 100")
+    # 6. finite numbers throughout
     for p in data["platforms"]:
         check(all(isinstance(x, (int, float)) for x in (p["followers"], p["reach"], p["impressions"],
                                                         p["linkClicks"], p["conversions"], p["revenue"], p["commission"])),

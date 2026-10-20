@@ -228,9 +228,20 @@ derived: {
   unitsSold: 8100,
   // per-percent helper for bar charts
   platformRevenueShare: { instagram: 24, youtube: 38, tiktok: 26, x: 8, twitch: 4 },
-  productRevenueShare:  { "prod-a": 30, "prod-b": 44, "prod-c": 26 }
+  productRevenueShare:  { "prod-a": 30, "prod-b": 44, "prod-c": 26 },
+  // Drivers and Details rollups (added 2026-10-20). Platforms name their
+  // content and interactions differently; these map them onto shared columns.
+  // null = not applicable on that platform.
+  activityByPlatform: { instagram: { posts: null, stories: 144, shorts: 52, videos: null, streams: null, total: 196 }, ... },
+  interactionsByPlatform: { x: { likes: 12554, comments: 1941 /* replies */, shares: 4623 /* reposts */, saves: 5673 /* bookmarks */ }, ... },
+  rankings: { products: [...], platforms: [...], campaigns: [...] }, // ids, best first, by commission
+  opportunities: [{ platformId: "x", message: "..." }, ...]          // short, data-backed suggestions
+  funnelMix: { all: { impressions, linkClicks, conversions, clickedPct, boughtPct, clickedOnlyPct, viewedOnlyPct }, instagram: {...}, ... }
+  // boughtPct + clickedOnlyPct + viewedOnlyPct = 100 (shares of impressions)
 }
 ```
+
+X's `postsCount` is drawn from a second RNG (`seed * 31 + 7`) so adding it left every other generated value unchanged.
 
 ### 4.7 MonthlySeries (feeds trend arrows + sparklines)
 10 rows (2026-01 … 2026-10):

@@ -32,7 +32,18 @@
     badge: "inline-flex items-center gap-0.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium",
     up: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
     down: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
-    activeNav: ["text-sky-700", "dark:text-sky-400"]
+    activeNav: ["text-sky-700", "dark:text-sky-400"],
+    // Funnel segments: one hue, darkest = furthest step; "didn't click" stays neutral.
+    funnel: {
+      bought: { bar: "[--color:var(--color-indigo-700)] dark:[--color:var(--color-indigo-300)]", swatch: "bg-indigo-700 dark:bg-indigo-300" },
+      clicked: { bar: "[--color:var(--color-indigo-400)] dark:[--color:var(--color-indigo-500)]", swatch: "bg-indigo-400 dark:bg-indigo-500" },
+      viewed: { bar: "[--color:var(--color-gray-300)] dark:[--color:var(--color-slate-600)]", swatch: "bg-gray-300 dark:bg-slate-600" }
+    },
+    severity: {
+      high: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
+      medium: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+      low: "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300"
+    }
   };
 
   var ACCENT = {
@@ -69,8 +80,47 @@
     return Number(value).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 });
   }
 
+  // Shares of impressions can be tiny; keep two decimals below 0.1% so they don't read as 0.0%.
+  function share(value) {
+    var n = Number(value);
+    return (n > 0 && n < 0.1 ? n.toFixed(2) : n.toFixed(1)) + "%";
+  }
+
+  function ratio(value) {
+    return Number(value).toFixed(1) + "x";
+  }
+
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // "2026-05" -> "May 2026"
+  function month(ym) {
+    var parts = String(ym).split("-");
+    return MONTHS[Number(parts[1]) - 1] + " " + parts[0];
+  }
+
+  // Counts that don't apply on a platform are null and render as a dash.
+  function countOrDash(value) {
+    return value === null || value === undefined ? { text: "—", className: T.muted } : compact(value);
+  }
+
+  var ACTIVITY_TYPES = [
+    { key: "posts", label: "posts" },
+    { key: "stories", label: "stories" },
+    { key: "shorts", label: "reels or shorts" },
+    { key: "videos", label: "videos" },
+    { key: "streams", label: "streams" }
+  ];
+
   var platformName = {};
   DATA.platforms.forEach(function (p) { platformName[p.id] = p.name; });
+  var productName = {};
+  DATA.products.forEach(function (p) { productName[p.id] = p.name; });
+  var campaignById = {};
+  DATA.campaigns.forEach(function (c) { campaignById[c.id] = c; });
+
+  function alertsFor(key, id) {
+    return DATA.alerts.filter(function (a) { return a[key] === id; });
+  }
 
   /* ---------- components (design-spec §6) ---------- */
 
@@ -110,9 +160,10 @@
   }
 
   // rows: [{ label, value, display }]. Bars are scaled to the largest value × 0.75
-  // so the outside label of the longest bar still fits (design-spec §7).
-  function barChart(opts) {
-    var node = card(opts.title);
+  // so the outside label of the longest bar still fits (design-spec §7); opts.scale
+  // lowers that for longer labels. Bars never shrink below a 2px sliver.
+  function chartTable(opts) {
+    var scale = opts.scale || 0.75;
     var max = 0;
     opts.rows.forEach(function (r) { if (r.value > max) max = r.value; });
 
@@ -127,25 +178,57 @@
       th.setAttribute("scope", "row");
       row.appendChild(th);
 
-      var td = el("td");
-      td.style.setProperty("--size", String(max > 0 ? (r.value / max) * 0.75 : 0));
+      var td = el("td", r.value > 0 ? "min-w-0.5" : "");
+      td.style.setProperty("--size", String(max > 0 ? (r.value / max) * scale : 0));
       td.style.setProperty("--color", opts.color);
       td.appendChild(el("span", "data whitespace-nowrap text-sm tabular-nums ps-2 " + T.heading, r.display));
       row.appendChild(td);
       tbody.appendChild(row);
     });
     table.appendChild(tbody);
-    node.appendChild(table);
+    return table;
+  }
+
+  // One chart, or several stacked under their own subtitles (opts.charts),
+  // plus an optional breakdown table (opts.table) or list (opts.breakdown) underneath.
+  function barChart(opts) {
+    var node = card(opts.title);
+    (opts.charts || [opts]).forEach(function (c, i) {
+      if (c.subtitle) node.appendChild(el("p", "text-sm font-medium mb-2 " + (i ? "mt-6 " : "") + T.heading, c.subtitle));
+      // Charts.css sets height: 100%; an auto-height wrapper lets the rows set it
+      // instead of the stretched grid card (design-spec §7).
+      var wrap = el("div");
+      wrap.appendChild(chartTable(c));
+      node.appendChild(wrap);
+    });
+    if (opts.table) {
+      var breakdown = table(opts.table);
+      breakdown.className += " mt-6";
+      node.appendChild(breakdown);
+    }
+    if (opts.breakdown) {
+      var items = el("ul", "mt-6 space-y-1 text-sm");
+      opts.breakdown.forEach(function (b) {
+        var li = el("li");
+        li.appendChild(el("span", "font-medium " + T.heading, b.label + ": "));
+        li.appendChild(el("span", T.body, b.detail));
+        items.appendChild(li);
+      });
+      node.appendChild(items);
+    }
+    if (opts.note) node.appendChild(el("p", "mt-3 text-sm " + T.muted, opts.note));
     return node;
   }
 
-  // columns: [{ title, numeric }]; rows: arrays of cell strings, or { text, className } objects.
-  function dataTable(opts) {
-    var node = card(opts.title);
-    node.className += " lg:col-span-2";
-
-    var wrap = el("div", "overflow-x-auto");
-    var table = el("table", "w-full text-sm");
+  // columns: [{ title, numeric }]; rows: arrays of cell strings, or
+  // { text, className, alerts } objects. Alerts render as markers after the text.
+  function table(opts) {
+    // Focusable so keyboard users can scroll it sideways (design-spec §10).
+    var wrap = el("div", "overflow-x-auto rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500");
+    wrap.tabIndex = 0;
+    wrap.setAttribute("role", "region");
+    wrap.setAttribute("aria-label", opts.title || "Breakdown table");
+    var tableNode = el("table", "w-full text-sm");
 
     var thead = el("thead");
     var headRow = el("tr", "bg-gray-50 dark:bg-slate-700/50 " + T.label);
@@ -155,7 +238,7 @@
       headRow.appendChild(th);
     });
     thead.appendChild(headRow);
-    table.appendChild(thead);
+    tableNode.appendChild(thead);
 
     var tbody = el("tbody", "divide-y divide-gray-200 dark:divide-slate-700");
     opts.rows.forEach(function (cells) {
@@ -164,15 +247,155 @@
         var numeric = opts.columns[i].numeric;
         var text = typeof cell === "object" ? cell.text : cell;
         var extra = typeof cell === "object" ? cell.className : T.body;
-        tr.appendChild(el("td", "px-3 py-3 whitespace-nowrap " + (numeric ? "text-right tabular-nums " : "") + extra, text));
+        var td = el("td", "px-3 py-3 whitespace-nowrap " + (numeric ? "text-right tabular-nums " : "") + extra, text);
+        if (typeof cell === "object" && cell.alerts) {
+          cell.alerts.forEach(function (a) {
+            td.appendChild(document.createTextNode(" "));
+            td.appendChild(alertMarker(a));
+          });
+        }
+        tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
-    table.appendChild(tbody);
+    tableNode.appendChild(tbody);
 
-    wrap.appendChild(table);
-    node.appendChild(wrap);
+    wrap.appendChild(tableNode);
+    return wrap;
+  }
+
+  // Shows "scroll for more" under a table only while its columns overflow.
+  function scrollHints() {
+    Array.prototype.forEach.call(document.querySelectorAll("main .overflow-x-auto"), function (wrap) {
+      var hint = wrap.nextElementSibling;
+      if (!hint || !hint.hasAttribute("data-scroll-hint")) {
+        hint = el("p", "mt-2 text-sm " + T.muted, "Scroll sideways to see every column →");
+        hint.setAttribute("data-scroll-hint", "");
+        wrap.parentNode.insertBefore(hint, wrap.nextSibling);
+      }
+      hint.hidden = wrap.scrollWidth <= wrap.clientWidth;
+    });
+  }
+
+  function dataTable(opts) {
+    var node = card(opts.title);
+    node.className += " lg:col-span-2";
+    node.appendChild(table(opts));
     return node;
+  }
+
+  // 100% stacked bars: every impression ends in exactly one segment (bought,
+  // clicked but didn't buy, saw but didn't click). Rows: [{ label, sub, mix }],
+  // where mix is a derived.funnelMix entry and sub is the muted lines under the label.
+  // byPlatform: [{ subtitle, caption, rows }], one bar chart per step. Then a legend and a step-rate table.
+  function funnel(opts) {
+    var node = card(opts.title);
+    var segments = [
+      { key: "bought", pct: "boughtPct", label: "Bought", count: "conversions" },
+      { key: "clicked", pct: "clickedOnlyPct", label: "Clicked, didn't buy" },
+      { key: "viewed", pct: "viewedOnlyPct", label: "Saw, didn't click" }
+    ];
+
+    var legend = el("ul", "flex flex-wrap gap-x-4 gap-y-1 mb-4 text-sm " + T.body);
+    segments.forEach(function (seg) {
+      var li = el("li", "flex items-center gap-2");
+      var swatch = el("span", "inline-block w-3 h-3 rounded-sm " + T.funnel[seg.key].swatch);
+      swatch.setAttribute("aria-hidden", "true");
+      li.appendChild(swatch);
+      li.appendChild(el("span", null, seg.label));
+      legend.appendChild(li);
+    });
+    node.appendChild(legend);
+
+    var tableNode = el("table", "charts-css bar multiple stacked show-labels hide-data data-spacing-10");
+    tableNode.style.setProperty("--labels-size", "8rem");
+    tableNode.appendChild(el("caption", "sr-only", opts.caption));
+    var tbody = el("tbody");
+    opts.rows.forEach(function (r) {
+      // Two-line labels need taller rows than Charts.css gives a bar by default.
+      var row = el("tr", "min-h-18");
+      var th = el("th", "text-sm text-left pe-3");
+      th.setAttribute("scope", "row");
+      // One block inside the th: Charts.css lays th out as a flex row.
+      var label = el("div", "min-w-0");
+      label.appendChild(el("p", "font-medium " + T.heading, r.label));
+      r.sub.forEach(function (line) { label.appendChild(el("p", "font-normal " + T.muted, line)); });
+      th.appendChild(label);
+      row.appendChild(th);
+      segments.forEach(function (seg) {
+        var value = r.mix[seg.pct];
+        var td = el("td", (value > 0 ? "min-w-0.5 " : "") + T.funnel[seg.key].bar);
+        td.style.setProperty("--size", String(value / 100));
+        var text = seg.label + ": " + share(value) + " of impressions";
+        td.title = r.label + " · " + text;
+        td.appendChild(el("span", "data sr-only", text));
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    tableNode.appendChild(tbody);
+    var wrap = el("div");
+    wrap.appendChild(tableNode);
+    node.appendChild(wrap);
+
+    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each bar is 100% of that platform's impressions. Everyone who bought also clicked, and everyone who clicked also saw the post."));
+
+    // Breakouts: the same steps compared across platforms, one chart per step.
+    node.appendChild(el("p", "text-sm font-medium mt-6 mb-3 " + T.heading, "Each step by platform"));
+    var grid = el("div", "grid gap-6 lg:grid-cols-3");
+    opts.byPlatform.forEach(function (stage) {
+      var col = el("div", "min-w-0");
+      col.appendChild(el("p", "text-sm mb-2 " + T.muted, stage.subtitle));
+      col.appendChild(chartTable({ caption: stage.caption, color: ACCENT.performance.color, rows: stage.rows }));
+      grid.appendChild(col);
+    });
+    node.appendChild(grid);
+    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each step has its own scale, so compare platforms within a step."));
+
+    var rates = table(opts.rates);
+    rates.className += " mt-6";
+    node.appendChild(rates);
+    return node;
+  }
+
+  function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  function severityBadge(severity) {
+    return el("span", T.badge + " " + T.severity[severity], capitalize(severity));
+  }
+
+  // A small marker next to a table row's name, pointing at an alert in the list.
+  function alertMarker(alert) {
+    var marker = el("span", T.badge + " " + T.severity[alert.severity], "⚠ " + capitalize(alert.severity));
+    marker.setAttribute("role", "img");
+    marker.setAttribute("aria-label", alert.severity + " alert: " + alert.message);
+    marker.title = alert.message;
+    return marker;
+  }
+
+  // items: [{ text, meta, badge, value }]. ordered: true numbers the list.
+  function listCard(opts) {
+    var node = card(opts.title);
+    node.appendChild(list(opts));
+    return node;
+  }
+
+  function list(opts) {
+    var listNode = el(opts.ordered ? "ol" : "ul", "divide-y divide-gray-200 dark:divide-slate-700");
+    opts.items.forEach(function (item, i) {
+      var li = el("li", "flex items-start gap-3 py-3 first:pt-0 last:pb-0 text-sm");
+      if (opts.ordered) li.appendChild(el("span", "w-4 shrink-0 font-semibold tabular-nums " + T.muted, String(i + 1)));
+      if (item.badge) li.appendChild(item.badge);
+      var main = el("div", "min-w-0 flex-1");
+      main.appendChild(el("p", item.value ? "font-medium " + T.heading : T.body, item.text));
+      if (item.meta) main.appendChild(el("p", "mt-0.5 " + T.muted, item.meta));
+      li.appendChild(main);
+      if (item.value) li.appendChild(el("span", "shrink-0 font-semibold tabular-nums " + T.heading, item.value));
+      listNode.appendChild(li);
+    });
+    return listNode;
   }
 
   /* ---------- 1. KPI cards (design-spec §8: Revenue, Volume, Engagement, Performance) ---------- */
@@ -215,57 +438,284 @@
     ].forEach(function (c) { kpiGrid.appendChild(c); });
   }
 
-  /* ---------- 2. Drivers ---------- */
+  /* ---------- 2. Drivers (design-spec §8) ---------- */
+
+  var driverLead = document.getElementById("driver-lead");
+  if (driverLead) {
+    driverLead.appendChild(funnel({
+      title: "Sales Funnel",
+      caption: "Share of impressions that bought, clicked without buying, or saw without clicking, for all platforms and for each platform",
+      rows: [{ id: "all", name: "All platforms" }].concat(DATA.platforms).map(function (p) {
+        var mix = derived.funnelMix[p.id];
+        return {
+          label: p.name,
+          mix: mix,
+          sub: [share(mix.clickedPct) + " clicked", share(mix.boughtPct) + " bought"]
+        };
+      }),
+      byPlatform: [
+        { key: "impressions", subtitle: "1. Impressions", caption: "Impressions per platform" },
+        { key: "linkClicks", subtitle: "2. Link clicks", caption: "Link clicks per platform" },
+        { key: "conversions", subtitle: "3. Conversions", caption: "Conversions per platform" }
+      ].map(function (stage) {
+        return {
+          subtitle: stage.subtitle,
+          caption: stage.caption,
+          rows: DATA.platforms.map(function (p) {
+            return { label: p.name, value: p[stage.key], display: stage.key === "conversions" ? count(p[stage.key]) : compact(p[stage.key]) };
+          })
+        };
+      }),
+      rates: {
+        title: "Step rates by platform",
+        columns: [
+          { title: "Platform" },
+          { title: "Impressions", numeric: true },
+          { title: "Clicked (of views)", numeric: true },
+          { title: "Link clicks", numeric: true },
+          { title: "Bought (of clicks)", numeric: true },
+          { title: "Conversions", numeric: true }
+        ],
+        rows: DATA.platforms.map(function (p) {
+          return [
+            { text: p.name, className: "font-medium " + T.heading },
+            count(p.impressions),
+            { text: pct(p.ctr), className: "font-medium " + T.heading },
+            count(p.linkClicks),
+            { text: pct(p.conversionRate), className: "font-medium " + T.heading },
+            count(p.conversions)
+          ];
+        })
+      }
+    }));
+  }
 
   var driverGrid = document.getElementById("driver-grid");
   if (driverGrid) {
-    driverGrid.appendChild(barChart({
-      title: "Commission Share by Platform",
-      caption: "Share of total commission earned on each platform, in percent",
-      color: ACCENT.revenue.color,
-      rows: DATA.platforms.map(function (p) {
-        var share = derived.platformRevenueShare[p.id] || 0;
-        return { label: p.name, value: share, display: pct(share) };
+    [
+      barChart({
+        title: "Commission Share by Platform",
+        caption: "Share of total commission earned on each platform, in percent",
+        color: ACCENT.revenue.color,
+        rows: DATA.platforms.map(function (p) {
+          var share = derived.platformRevenueShare[p.id] || 0;
+          return { label: p.name, value: share, display: pct(share) };
+        })
+      }),
+      barChart({
+        title: "Performance by Product",
+        charts: [
+          {
+            subtitle: "Commission",
+            caption: "Commission earned per product, in US dollars",
+            color: ACCENT.revenue.color,
+            rows: DATA.products.map(function (p) {
+              return { label: p.name, value: p.commission, display: usd(p.commission) };
+            })
+          },
+          {
+            subtitle: "Conversion rate",
+            caption: "Conversion rate per product, in percent of link clicks",
+            color: ACCENT.performance.color,
+            rows: DATA.products.map(function (p) {
+              return { label: p.name, value: p.conversionRate, display: pct(p.conversionRate) };
+            })
+          }
+        ]
+      }),
+      barChart({
+        title: "Activity by Platform",
+        caption: "Pieces of content published on each platform",
+        color: ACCENT.volume.color,
+        rows: DATA.platforms.map(function (p) {
+          var total = derived.activityByPlatform[p.id].total;
+          return { label: p.name, value: total, display: count(total) };
+        }),
+        breakdown: DATA.platforms.map(function (p) {
+          var a = derived.activityByPlatform[p.id];
+          var parts = [];
+          ACTIVITY_TYPES.forEach(function (t) {
+            if (a[t.key] !== null) parts.push(count(a[t.key]) + " " + t.label);
+          });
+          return { label: p.name, detail: parts.join(" · ") };
+        })
+      }),
+      barChart({
+        title: "Engagement by Platform",
+        caption: "Engagement rate on each platform, in percent",
+        color: ACCENT.engagement.color,
+        rows: DATA.platforms.map(function (p) {
+          return { label: p.name, value: p.engagementRate, display: pct(p.engagementRate) };
+        }),
+        table: {
+          title: "Interactions by platform",
+          columns: [
+            { title: "Platform" },
+            { title: "Likes", numeric: true },
+            { title: "Comments", numeric: true },
+            { title: "Shares", numeric: true },
+            { title: "Saves", numeric: true }
+          ],
+          rows: DATA.platforms.map(function (p) {
+            var e = derived.interactionsByPlatform[p.id];
+            return [
+              { text: p.name, className: "font-medium " + T.heading },
+              countOrDash(e.likes), countOrDash(e.comments), countOrDash(e.shares), countOrDash(e.saves)
+            ];
+          })
+        },
+        note: "X counts replies as comments, reposts as shares and bookmarks as saves. Twitch counts chat messages as comments."
       })
-    }));
+    ].forEach(function (c) { driverGrid.appendChild(c); });
   }
 
-  /* ---------- 3. Operational details ---------- */
+  /* ---------- 3. Operational details (design-spec §8) ---------- */
 
   var detailGrid = document.getElementById("detail-grid");
   if (detailGrid) {
-    detailGrid.appendChild(dataTable({
-      title: "Products",
-      columns: [
-        { title: "Product" },
-        { title: "Price", numeric: true },
-        { title: "Units Sold", numeric: true },
-        { title: "Revenue", numeric: true },
-        { title: "Commission", numeric: true },
-        { title: "Conv. Rate", numeric: true },
-        { title: "Top Channel" }
-      ],
-      rows: DATA.products.map(function (prod) {
-        var topChannelId = null;
-        var topChannelVal = -1;
-        Object.keys(prod.platformShare || {}).forEach(function (plId) {
-          if (prod.platformShare[plId] > topChannelVal) {
-            topChannelVal = prod.platformShare[plId];
-            topChannelId = plId;
-          }
-        });
-        return [
-          { text: prod.name, className: "font-medium " + T.heading },
-          usd(prod.price),
-          count(prod.unitsSold),
-          { text: usd(prod.revenue), className: "font-medium " + T.heading },
-          { text: usd(prod.commission), className: "font-medium " + T.heading },
-          pct(prod.conversionRate),
-          platformName[topChannelId] || topChannelId
-        ];
+    var alertsCard = listCard({
+      title: "Alerts",
+      items: DATA.alerts.map(function (a) {
+        var where = [month(a.month)];
+        if (a.platformId) where.push(platformName[a.platformId]);
+        if (a.productId) where.push(productName[a.productId]);
+        if (a.campaignId) where.push("Campaign: " + campaignById[a.campaignId].name);
+        return { badge: severityBadge(a.severity), text: a.message, meta: where.join(" · ") };
       })
-    }));
+    });
+    alertsCard.id = "alerts";
+
+    var topCard = card("Top Performers");
+    topCard.className += " lg:col-span-2";
+    var topGrid = el("div", "grid gap-6 md:grid-cols-2 lg:grid-cols-4");
+    [
+      {
+        subtitle: "Products by commission",
+        items: derived.rankings.products.map(function (id) {
+          var p = DATA.products.filter(function (x) { return x.id === id; })[0];
+          return { text: p.name, value: usd(p.commission) };
+        })
+      },
+      {
+        subtitle: "Platforms by commission",
+        items: derived.rankings.platforms.slice(0, 3).map(function (id) {
+          var p = DATA.platforms.filter(function (x) { return x.id === id; })[0];
+          return { text: p.name, value: usd(p.commission) };
+        })
+      },
+      {
+        subtitle: "Campaigns by commission",
+        items: derived.rankings.campaigns.slice(0, 3).map(function (id) {
+          var c = campaignById[id];
+          return { text: c.name, meta: month(c.period) + " · " + ratio(c.roi) + " ROI", value: usd(c.commission) };
+        })
+      },
+      {
+        subtitle: "Campaigns by return",
+        note: "Only campaigns that spent at least " + usd(derived.roiMinSpend) + ".",
+        items: derived.rankings.campaignsByRoi.slice(0, 3).map(function (id) {
+          var c = campaignById[id];
+          return { text: c.name, meta: month(c.period) + " · " + usd(c.spend) + " spent", value: ratio(c.roi) };
+        })
+      }
+    ].forEach(function (group) {
+      var col = el("div", "min-w-0");
+      col.appendChild(el("p", "text-sm font-medium mb-3 " + T.heading, group.subtitle));
+      col.appendChild(list({ ordered: true, items: group.items }));
+      if (group.note) col.appendChild(el("p", "mt-3 text-sm " + T.muted, group.note));
+      topGrid.appendChild(col);
+    });
+    topCard.appendChild(topGrid);
+
+    [
+      alertsCard,
+      listCard({
+        title: "Improvement Opportunities",
+        items: derived.opportunities.map(function (o) { return { text: o.message }; })
+      }),
+      dataTable({
+        title: "Platforms",
+        columns: [
+          { title: "Platform" },
+          { title: "Reach", numeric: true },
+          { title: "Eng. Rate", numeric: true },
+          { title: "Conversions", numeric: true },
+          { title: "Commission", numeric: true },
+          { title: "ROI", numeric: true }
+        ],
+        rows: DATA.platforms.map(function (p) {
+          return [
+            { text: p.name, className: "font-medium " + T.heading, alerts: alertsFor("platformId", p.id) },
+            compact(p.reach),
+            pct(p.engagementRate),
+            count(p.conversions),
+            { text: usd(p.commission), className: "font-medium " + T.heading },
+            ratio(p.roi)
+          ];
+        })
+      }),
+      dataTable({
+        title: "Products",
+        columns: [
+          { title: "Product" },
+          { title: "Price", numeric: true },
+          { title: "Units Sold", numeric: true },
+          { title: "Revenue", numeric: true },
+          { title: "Commission", numeric: true },
+          { title: "Conv. Rate", numeric: true },
+          { title: "Top Channel" }
+        ],
+        rows: DATA.products.map(function (prod) {
+          var topChannelId = null;
+          var topChannelVal = -1;
+          Object.keys(prod.platformShare || {}).forEach(function (plId) {
+            if (prod.platformShare[plId] > topChannelVal) {
+              topChannelVal = prod.platformShare[plId];
+              topChannelId = plId;
+            }
+          });
+          return [
+            { text: prod.name, className: "font-medium " + T.heading, alerts: alertsFor("productId", prod.id) },
+            usd(prod.price),
+            count(prod.unitsSold),
+            { text: usd(prod.revenue), className: "font-medium " + T.heading },
+            { text: usd(prod.commission), className: "font-medium " + T.heading },
+            pct(prod.conversionRate),
+            platformName[topChannelId] || topChannelId
+          ];
+        })
+      }),
+      dataTable({
+        title: "Campaigns",
+        columns: [
+          { title: "Campaign" },
+          { title: "Month" },
+          { title: "Product" },
+          { title: "Platform" },
+          { title: "Spend", numeric: true },
+          { title: "Sales", numeric: true },
+          { title: "ROI", numeric: true }
+        ],
+        rows: DATA.campaigns.slice().sort(function (a, b) {
+          return a.period < b.period ? 1 : a.period > b.period ? -1 : 0;
+        }).map(function (c) {
+          return [
+            { text: c.name, className: "font-medium " + T.heading, alerts: alertsFor("campaignId", c.id) },
+            month(c.period),
+            productName[c.productId],
+            platformName[c.platformId],
+            usd(c.spend),
+            count(c.conversions),
+            { text: ratio(c.roi), className: "font-medium " + T.heading }
+          ];
+        })
+      }),
+      topCard
+    ].forEach(function (c) { detailGrid.appendChild(c); });
   }
+
+  scrollHints();
+  window.addEventListener("resize", scrollHints, { passive: true });
 
   /* ---------- 4. Footer meta ---------- */
 
