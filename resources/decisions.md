@@ -110,7 +110,7 @@
 ---
 
 ### [2026-10-20] Sales funnel as 100% stacked bars
-- **Decision**: Each platform (and "All platforms") gets one horizontal bar that is 100% of its impressions. The bar is split into bought, clicked but didn't buy, and saw but didn't click, using one indigo hue (darkest = furthest step) and neutral gray for "didn't click". `derived.funnelMix` holds the shares, which an invariant checks sum to 100. The step-rate table stays.
-- **Rationale**: mae's reference was a 100% stacked bar chart. The funnel steps are nested (a buyer also clicked and saw), so the three buckets partition impressions and a part-to-whole bar is truthful. One hue keeps the steps reading as an order, not as unrelated categories.
+- **Decision**: Each platform (and "All platforms") gets one horizontal bar that is 100% of its impressions. The bar is split into bought, clicked but didn't buy, and saw but didn't click, using one indigo hue (darkest = furthest step) and neutral gray for "didn't click". `derived.funnelMix` holds the shares, which an invariant checks sum to 100. The per-step "Each step by platform" charts and the step-rate table stay underneath.
+- **Rationale**: mae's reference was a 100% stacked bar chart. The funnel steps are nested (a buyer also clicked and saw), so the three buckets partition impressions and a part-to-whole bar is truthful. mae asked to keep the per-step charts: the stacked bars show the drop-off within each platform, the per-step charts compare platforms at each step. One hue keeps the steps reading as an order, not as unrelated categories.
 - **Alternatives considered**: linear bars per step (the previous version; replaced at mae's request); a zoomed bar of clicks only (not built yet: it would make the bought/clicked split easier to see, but the whole-funnel framing is what mae asked for).
 - **Status**: Accepted (2026-10-20).

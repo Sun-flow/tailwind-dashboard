@@ -286,7 +286,8 @@
 
   // 100% stacked bars: every impression ends in exactly one segment (bought,
   // clicked but didn't buy, saw but didn't click). Rows: [{ label, sub, mix }],
-  // where mix is a derived.funnelMix entry and sub is the muted lines under the label. Then a legend and a step-rate table.
+  // where mix is a derived.funnelMix entry and sub is the muted lines under the label.
+  // byPlatform: [{ subtitle, caption, rows }], one bar chart per step. Then a legend and a step-rate table.
   function funnel(opts) {
     var node = card(opts.title);
     var segments = [
@@ -338,6 +339,18 @@
     node.appendChild(wrap);
 
     node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each bar is 100% of that platform's impressions. Everyone who bought also clicked, and everyone who clicked also saw the post."));
+
+    // Breakouts: the same steps compared across platforms, one chart per step.
+    node.appendChild(el("p", "text-sm font-medium mt-6 mb-3 " + T.heading, "Each step by platform"));
+    var grid = el("div", "grid gap-6 lg:grid-cols-3");
+    opts.byPlatform.forEach(function (stage) {
+      var col = el("div", "min-w-0");
+      col.appendChild(el("p", "text-sm mb-2 " + T.muted, stage.subtitle));
+      col.appendChild(chartTable({ caption: stage.caption, color: ACCENT.performance.color, rows: stage.rows }));
+      grid.appendChild(col);
+    });
+    node.appendChild(grid);
+    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each step has its own scale, so compare platforms within a step."));
 
     var rates = table(opts.rates);
     rates.className += " mt-6";
@@ -438,6 +451,19 @@
           label: p.name,
           mix: mix,
           sub: [share(mix.clickedPct) + " clicked", share(mix.boughtPct) + " bought"]
+        };
+      }),
+      byPlatform: [
+        { key: "impressions", subtitle: "1. Impressions", caption: "Impressions per platform" },
+        { key: "linkClicks", subtitle: "2. Link clicks", caption: "Link clicks per platform" },
+        { key: "conversions", subtitle: "3. Conversions", caption: "Conversions per platform" }
+      ].map(function (stage) {
+        return {
+          subtitle: stage.subtitle,
+          caption: stage.caption,
+          rows: DATA.platforms.map(function (p) {
+            return { label: p.name, value: p[stage.key], display: stage.key === "conversions" ? count(p[stage.key]) : compact(p[stage.key]) };
+          })
         };
       }),
       rates: {
