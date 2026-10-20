@@ -13,6 +13,7 @@ Older documents may refer to these files at their previous paths:
 | `resources/development-rollout-todo.md` | `archive/development-rollout-todo.md` |
 | `.agents/rules/layout.md`, `.agents/rules/components.md` | `archive/rules/` |
 | `memory-bank/` (all but `current-status.md`) | `archive/memory-bank/` |
-| `memory-bank/current-status.md` | `resources/status.md` (still current) |
+| `memory-bank/current-status.md` | `memory-bank/status.md` (still current; briefly `resources/status.md`) |
+| `prompt-memory-bank-generator.md` (as a live prompt) | Superseded by `.agents/prompts/memory-bank.md` |
 | `generate-dashboard-guidelines.md`, `generate-profile-insights.md`, `prompt-memory-bank-generator.md` | `archive/` |
 | `.agents/scripts/init.sh` | `archive/init.sh` |

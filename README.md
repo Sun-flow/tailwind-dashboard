@@ -58,10 +58,10 @@ The schema is described in [`resources/mock-data-plan.md`](resources/mock-data-p
 | `resources/design-spec.md` | **The design spec**: layout, colours, type, components, section content and definition of done. |
 | `resources/decisions.md` | Log of design decisions and why they were made. |
 | `resources/profile.md`, `resources/brief.md` | The client persona and the original brief. |
-| `resources/status.md` | What's built and what's next. |
-| `AGENTS.md`, `.agents/rules/` | Working instructions for AI coding agents that help build the project. |
+| `AGENTS.md`, `CLAUDE.md`, `.agents/` | Working instructions for AI coding agents that help build the project. |
+| `memory-bank/` | The agents' shared memory between sessions: context, status, a session log and notes. |
 | `archive/` | Superseded planning notes, kept for history. Not current; see [`archive/README.md`](archive/README.md). |
 
 ## Status
 
-The dashboard is complete against the design spec. It has no console errors, no horizontal scroll at 375 to 1440px, and no axe-core accessibility violations in either theme. ROI is the creator's return on commission: (commission − spend) ÷ spend. Possible next steps are in [`resources/status.md`](resources/status.md).
+The dashboard is complete against the design spec. It has no console errors, no horizontal scroll at 375 to 1440px, and no axe-core accessibility violations in either theme. ROI is the creator's return on commission: (commission − spend) ÷ spend. Possible next steps are in [`memory-bank/status.md`](memory-bank/status.md).
