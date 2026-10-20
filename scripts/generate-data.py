@@ -430,6 +430,10 @@ def build(rng: random.Random, seed: int) -> dict:
     er_den = sum(aud[c["id"]]["reach"] for c in PLATFORM_CONFIG)
     overall_roi = round((total_revenue - total_cost) / total_cost, 2) if total_cost else 0.0
 
+    total_impressions = sum(p["impressions"] for p in data["platforms"])
+    total_clicks = sum(p["linkClicks"] for p in data["platforms"])
+    total_conversions = sum(p["conversions"] for p in data["platforms"])
+
     last = monthly[-1]
     prev = monthly[-2]
     def mom(cur, prev_) -> float:
@@ -449,6 +453,11 @@ def build(rng: random.Random, seed: int) -> dict:
         "totalConversions": int(sum(aud[c["id"]]["conversions"] for c in PLATFORM_CONFIG)),
         "overallRoi": overall_roi,
         "unitsSold": total_units,
+        "unitsSoldDeltaPct": round(mom(last["conversions"], prev["conversions"]), 1),
+        "totalImpressions": total_impressions,
+        "totalLinkClicks": total_clicks,
+        "overallCtr": round(total_clicks / total_impressions * 100, 2) if total_impressions else 0.0,
+        "overallConversionRate": round(total_conversions / total_clicks * 100, 2) if total_clicks else 0.0,
         "platformRevenueShare": {pl_id: round(platform_revenue[pl_id] / total_revenue * 100, 1)
                                  for pl_id in platform_revenue},
         "productRevenueShare": {p["id"]: round(p["revenue"] / total_revenue * 100, 1)

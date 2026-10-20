@@ -83,3 +83,10 @@
 - **Rationale**: Long enough for meaningful trend arrows + MoM deltas + future sparklines without ballooning the file; end-of-period 2026-10 is a realistic "today" for a demo. Approved by client ("sounds good").
 - **Alternatives considered**: 12 months (rejected — 2 extra rows of marginal value, larger diff); 3–6 months (rejected — too short for a trend story).
 - **Status**: Accepted (2026-10-20).
+---
+
+### [2026-10-20] One binding design spec; superseded docs archived
+- **Decision**: `resources/design-spec.md` is the single source for layout, colour, type, components, section content, and definition of done. `.agents/rules/` is trimmed to `core-rules.md`, `accessibility.md`, and `semantic-html.md`. Older planning docs, rules, and memory-bank files move to `archive/`.
+- **Rationale**: The same decisions were written in five or six files that contradicted each other (card padding, breakpoints, the KPI set, "no navigation", the Charts.css URL, the no-inline-style rule). Each contradiction caused visual drift. Contradictions settled in the spec: base/`md:`/`lg:` breakpoints only; the KPI cards follow the brief's Revenue / Volume / Engagement / Performance categories; inline `style` is allowed only for Charts.css data values; the page renders from JS (no no-JS requirement); dark by default unless the user saved light; commissions only (no YouTube ad or Twitch subscription revenue yet); trends compare against last month.
+- **Alternatives considered**: patching each conflicting file in place (rejected: the duplication would drift again); semantic `@theme` colour tokens instead of `dark:` pairs (deferred: the code already uses pairs consistently).
+- **Status**: Accepted (2026-10-20). Supersedes the OS-preference first-load note in the archived accessibility rule.

@@ -674,6 +674,11 @@ window.DATA = {
     "totalConversions": 1404,
     "overallRoi": 3,
     "unitsSold": 1404,
+    "unitsSoldDeltaPct": 33.3,
+    "totalImpressions": 3348575,
+    "totalLinkClicks": 77960,
+    "overallCtr": 2.33,
+    "overallConversionRate": 1.8,
     "platformRevenueShare": {
       "instagram": 23.3,
       "youtube": 23.5,
