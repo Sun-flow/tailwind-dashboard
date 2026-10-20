@@ -21,10 +21,13 @@ It is a presentation piece built on generated mock data. It is **not** a product
 pip3 install -r requirements.txt    # one-time
 python3 server.py                   # serve at http://localhost:3000
 python3 scripts/generate-data.py    # regenerate data.js; runs the invariant checks
-python3 scripts/check-memory.py     # check the memory bank for broken paths and size
+python3 scripts/check-memory.py     # check the memory bank; lists commits since it was last updated
+python3 scripts/screenshots.py      # retake resources/screenshots/ and check console errors and scroll
 ```
 
-There are no tests or CI. "Done" for a visual change is the checklist in spec §11.
+`scripts/screenshots.py` needs `pip3 install -r requirements-dev.txt` and `python3 -m playwright install chromium` once per environment.
+
+There are no tests or CI. "Done" for a visual change is the checklist in spec §11; `scripts/screenshots.py` covers its items 1 to 3 except judging how the screenshots look.
 
 ## How it fits together
 
@@ -39,7 +42,7 @@ There are no tests or CI. "Done" for a visual change is the checklist in spec §
 | Who the client is; products, platforms, commission rate | `resources/profile.md` |
 | Data schema and generation method | `resources/mock-data-plan.md` |
 | The original three-block brief | `resources/brief.md` |
-| How agents should work here | `AGENTS.md`, `.agents/rules/` |
+| How agents should work here | `AGENTS.md` (entry point for every tool; `CLAUDE.md` and `.github/copilot-instructions.md` point to it), `.agents/rules/` |
 | How to build or rebuild a memory bank | `.agents/prompts/memory-bank.md` |
 | The public description of the project | `README.md` |
 | Screenshots used by the README and for review | `resources/screenshots/` |
