@@ -78,7 +78,7 @@ This is the exhaustive candidate list we generated before narrowing to the schem
 
 **Revenue & ROI**
 - Product revenue = units × price; commission = revenue × 15%
-- Per-platform revenue/commission, ROI = (revenue − cost) ÷ cost, EMV, CLV (EMV/CLV → future, not first slice)
+- Per-platform revenue/commission, ROI = (commission − cost) ÷ cost, EMV, CLV (EMV/CLV → future, not first slice)
 
 **Content cadence & Publishing**
 - Posts/reels/videos/streams count, publishing frequency, best-performing post
@@ -172,7 +172,7 @@ Five platforms with a **common core** and **platform-specific extensions** (each
   linkClicks: 12400, ctr: 2.0, // clicks ÷ impressions × 100
   conversions: 320, conversionRate: 2.6,  // conversions ÷ clicks
   revenue: 24000, commission: 3600,
-  roi: 4.1,                                   // (revenue − cost) ÷ cost
+  roi: 4.1,                                   // (commission − cost) ÷ cost
   trend: { followers: "+3.2%", engagementRate: "+0.4pt", revenue: "+12%" }
 }
 ```
@@ -202,7 +202,7 @@ Five platforms with a **common core** and **platform-specific extensions** (each
   linkClicks: 8400, ctr: 2.0,
   conversions: 231, conversionRate: 2.75,
   revenue: 11550, commission: 1732.5,
-  roi: 5.2,                          // (revenue − spend) ÷ spend
+  roi: 5.2,                          // (commission − spend) ÷ spend
   attributionWindowDays: 30,
   discountCode: "SUMMER50",
   utm: "ig-summer-a",

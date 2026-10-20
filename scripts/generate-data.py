@@ -243,6 +243,8 @@ def build(rng: random.Random, seed: int) -> dict:
     platform_commission = {}
     platform_cost = {}
 
+    # ROI is the creator's return: (commission - cost) / cost. Sales revenue goes
+    # to the brand; the creator keeps COMMISSION_RATE of it.
     # platform cost derived from a plausible ROI so roi stats are realistic
     for cfg in PLATFORM_CONFIG:
         pl_id = cfg["id"]
@@ -252,9 +254,10 @@ def build(rng: random.Random, seed: int) -> dict:
         roi_target = rng.uniform(1.5, 8.0)
         if pl_id == "x":
             roi_target = rng.uniform(0.8, 3.5)
-        cost = rev / (roi_target + 1)
+        comm = platform_commission[pl_id]
+        cost = comm / (roi_target + 1)
         platform_cost[pl_id] = round(cost, 2)
-        roi = round((rev - cost) / cost, 2) if cost else 0.0
+        roi = round((comm - cost) / cost, 2) if cost else 0.0
 
         a = aud[pl_id]
         monthly_f = monthly_followers(a)
@@ -304,14 +307,14 @@ def build(rng: random.Random, seed: int) -> dict:
             product = rng.choice(PRODUCTS)
             period = rng.choice(MONTHS[2:])
             spend = spends[idx]
-            roi_c = rng.uniform(cfg and pl_id and (platform_revenue[pl_id] / cost - 1) * 0.8,
-                                (platform_revenue[pl_id] / cost - 1) * 1.15)
+            roi_c = rng.uniform(cfg and pl_id and (platform_commission[pl_id] / cost - 1) * 0.8,
+                                (platform_commission[pl_id] / cost - 1) * 1.15)
             # one guaranteed under-delivering campaign (drives roi-alert)
             if low_roi_campaign is None and rng.random() < 0.5:
                 roi_c = rng.uniform(0.8, 1.4)
             if len(campaigns) == 0 and low_roi_campaign is None:
                 roi_c = rng.uniform(0.8, 1.4)       # deterministic: first campaign
-            revenue_c = round(spend * (roi_c + 1), 2)
+            revenue_c = round(spend * (roi_c + 1) / COMMISSION_RATE, 2)   # sales that earn that commission
 
             name = f"{cfg['name']} {cfg['tag'].title()} - {product['name']}"
             if idx == 0:
@@ -344,7 +347,7 @@ def build(rng: random.Random, seed: int) -> dict:
             factor = platform_revenue[pl_id] / total_rev
             for c in plat_campaigns:
                 c["_rev"] = round(c["_rev"] * factor, 2)
-                c["_roi"] = round(c["_rev"] / c["spend"] - 1, 2) if c["spend"] else 0.0
+                c["_roi"] = round(c["_rev"] * COMMISSION_RATE / c["spend"] - 1, 2) if c["spend"] else 0.0
         for c in plat_campaigns:
             price = PRODUCT_BY_ID[c["productId"]]["price"]
             conversions_c = max(1, int(c["_rev"] / price))
@@ -365,7 +368,7 @@ def build(rng: random.Random, seed: int) -> dict:
                 "conversionRate": round(conversions_c / clicks_c * 100, 2),
                 "revenue": rev_c,
                 "commission": round(rev_c * COMMISSION_RATE, 2),
-                "roi": round((rev_c - c["spend"]) / c["spend"], 2) if c["spend"] else 0.0,
+                "roi": round((rev_c * COMMISSION_RATE - c["spend"]) / c["spend"], 2) if c["spend"] else 0.0,
             })
 
     data["campaigns"] = [{k: v for k, v in c.items() if not k.startswith("_")} for c in campaigns]
@@ -428,7 +431,7 @@ def build(rng: random.Random, seed: int) -> dict:
     total_cost = sum(platform_cost.values())
     er_num = sum(aud[c["id"]]["er"] * aud[c["id"]]["reach"] for c in PLATFORM_CONFIG)
     er_den = sum(aud[c["id"]]["reach"] for c in PLATFORM_CONFIG)
-    overall_roi = round((total_revenue - total_cost) / total_cost, 2) if total_cost else 0.0
+    overall_roi = round((total_commission - total_cost) / total_cost, 2) if total_cost else 0.0
 
     total_impressions = sum(p["impressions"] for p in data["platforms"])
     total_clicks = sum(p["linkClicks"] for p in data["platforms"])
@@ -570,7 +573,7 @@ def _driver_rollups(data: dict) -> None:
         d["funnelMix"][p["id"]] = mix(p["impressions"], p["linkClicks"], p["conversions"])
 
     # Top lists: ids ranked best first. ROI is only ranked for campaigns with at
-    # least median spend; a $33 test's ratio swings on a single sale.
+    # least median spend; a $5 test's ratio swings on a single sale.
     spends = sorted(c["spend"] for c in data["campaigns"])
     median_spend = spends[len(spends) // 2]
     d["roiMinSpend"] = median_spend

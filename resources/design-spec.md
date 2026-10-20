@@ -98,7 +98,7 @@ Font: Tailwind's default system sans-serif stack.
 - Currency: `$12,450` (no decimals) — `toLocaleString("en-US")`.
 - Percentages: one decimal place, `23.3%`. Percentage-point changes: `+0.5pt`.
 - Counts: thousands separators, `1,404`; large counts may be compacted, `3.3M`.
-- Ratios (ROI): one decimal and an `x`, `2.8x`.
+- Ratios (ROI): one decimal and an `x`, `2.8x`. ROI is the creator's return: (commission − spend) ÷ spend.
 - Months: `Oct 2026`.
 - A value that doesn't apply (e.g. saves on YouTube) shows a muted `—`.
 - Numeric table columns are right-aligned with `tabular-nums`.
@@ -184,7 +184,7 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | Drivers | Activity | Yes | Bar chart of content pieces per platform (sky), with a "Platform: 144 stories · 52 reels or shorts" breakdown list |
 | Drivers | Engagement | Yes | Bar chart of engagement rate per platform (violet), with a likes / comments / shares / saves table and a footnote on how X and Twitch map onto those columns |
 | Drivers | Quality | No | Leads, attendance and pass rate don't apply |
-| Details | Products table | Yes | Product, price, units sold, revenue, commission, conversion rate, top channel |
+| Details | Products table | Yes | Product, price, units sold, sales value (what buyers paid), commission, conversion rate, top channel |
 | Details | Platforms table | Yes | Reach, engagement rate, conversions, commission, ROI |
 | Details | Campaigns table | Yes | Month, product, platform, spend, sales (results), ROI; newest first |
 | Details | Alerts | Yes | Conversion drops and spikes, shown next to the related row as well as in the list |

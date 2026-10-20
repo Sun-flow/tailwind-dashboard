@@ -11,7 +11,7 @@ A one-page Tailwind CSS dashboard showing an influencer's commissions, revenue, 
 1. `resources/design-spec.md` — **the single, binding spec** for layout, colour, type, components, content, and definition of done.
 2. `.agents/rules/core-rules.md` — how to work in this repo.
 3. `resources/profile.md` — who the client is.
-4. `memory-bank/current-status.md` — what's built and what's next.
+4. `resources/status.md` — what's built and what's next.
 
 Look up as needed: `resources/brief.md` (the original section brief), `resources/decisions.md` (why decisions were made), `resources/mock-data-plan.md` (data schema).
 
@@ -26,12 +26,13 @@ Look up as needed: `resources/brief.md` (the original section brief), `resources
 | `data.js` | Generated mock data (`window.DATA`). Don't hand-edit. |
 | `scripts/generate-data.py` | Deterministic generator for `data.js`, with invariant checks. |
 | `server.py` | Flask dev server on port 3000. |
+| `resources/screenshots/` | Full-page screenshots at 375/768/1024/1440 in both themes, plus the README hero images. Retake them after a visual change. |
 | `archive/` | Superseded planning docs and rules. History only; not binding. |
 
 ## Quick start
 
 ```bash
-pip3 install flask                  # one-time
+pip3 install -r requirements.txt    # one-time (Flask)
 python3 server.py                   # http://0.0.0.0:3000
 python3 scripts/generate-data.py    # regenerate data.js after changing the generator
 ```

@@ -1,7 +1,7 @@
 # Architecture Decision Context (ADC) Log
 
 > **Date created**: 2026-10-20
-> **Purpose**: Record decisions that have lasting consequences — tech choice, data shape, nav, theme, verification approach. Maintained per the "Architecture Decision Context (ADC) — Log Format" section in `AGENTS.md`.
+> **Purpose**: Record decisions that have lasting consequences — tech choice, data shape, nav, theme, verification approach. Entry format: the "Decision log format" section in `AGENTS.md`.
 > **Rule**: one entry per decision; keep it short; update `Status` when superseded; never delete an entry.
 
 ---
@@ -95,7 +95,7 @@
 
 ### [2026-10-20] Drivers and Details build-out
 - **Decision**: Build the rest of the Drivers and Details blocks (spec §8). Activity and engagement are normalised onto shared columns in the generator (`derived.activityByPlatform`, `derived.interactionsByPlatform`), with `null` for "doesn't apply". Top lists, ranked by commission, and improvement opportunities are also generated (`derived.rankings`, `derived.opportunities`). Alerts use a red / amber / gray severity pill, and ROI is shown as `2.8x`.
-- **Rationale**: Platforms name content and interactions differently (X replies vs comments, Twitch chat), so mapping them in the generator keeps `app.js` free of business logic. Campaigns are ranked by commission rather than ROI because tiny Twitch tests ($33 spend) top any ROI ranking. Amber gives "medium" alerts a colour that isn't read as a trend direction.
+- **Rationale**: Platforms name content and interactions differently (X replies vs comments, Twitch chat), so mapping them in the generator keeps `app.js` free of business logic. Campaigns are ranked by commission rather than ROI because tiny Twitch tests (about $5 spend) top any ROI ranking. Amber gives "medium" alerts a colour that isn't read as a trend direction.
 - **Alternatives considered**: stacked multi-colour activity and engagement bars (rejected: breaks "one series colour per chart" and needs a legend); a sparse activity table (tried, rejected: mostly dashes and it scrolled in a half-width card).
 - **Status**: Accepted (2026-10-20).
 
@@ -118,7 +118,23 @@
 ---
 
 ### [2026-10-20] Rank campaigns by commission and by ROI with a minimum spend
-- **Decision**: Top performers lists campaigns twice: by commission, and by ROI among campaigns that spent at least the median (`derived.roiMinSpend`, $1,884 with the default seed).
-- **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $34 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
+- **Decision**: Top performers lists campaigns twice: by commission, and by ROI among campaigns that spent at least the median (`derived.roiMinSpend`, $283 with the default seed).
+- **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $5 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
 - **Alternatives considered**: commission only (hides efficiency); ROI only (tiny tests win); a fixed dollar threshold (rejected: the median adapts if the data changes).
-- **Status**: Accepted by mae (2026-10-20). Open question: ROI is computed on sales revenue; if campaign spend is the creator's own money, it should use commission instead.
+- **Status**: Accepted by mae (2026-10-20). ROI basis settled by [ROI is the creator's return on commission].
+
+---
+
+### [2026-10-20] Repo layout for presentation
+- **Decision**: The README describes the project, how to run it, and the layout, with theme-aware hero screenshots. 4Geeks template leftovers are removed (`README.cn.md`, `README.es.md`, `learn.json`, `.vscode/rigo-baby.jpeg`, the `app.py` branch in `server.py`). `memory-bank/current-status.md` moves to `resources/status.md` so all current docs sit in `resources/`. `AGENTS.md` and `.agents/rules/` stay, labelled in the README as instructions for coding agents; `archive/` stays, labelled as history.
+- **Rationale**: A visitor should land on a README about this dashboard, not a coding-bootcamp template, and see at a glance which files are the product, which are the spec, and which are history or agent tooling.
+- **Alternatives considered**: deleting `archive/` (rejected: the decision log and data plan cite it, and it's cheap to keep once labelled); moving `resources/` to `docs/` (rejected: churns every cross-reference for a naming gain only).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] ROI is the creator's return on commission
+- **Decision**: ROI = (commission − spend) ÷ spend, for platforms, campaigns and `derived.overallRoi`. Sales revenue (what buyers paid the brand) is labelled "Sales Value" in the products table so "revenue" isn't read as the creator's income.
+- **Rationale**: mae: the influencer's return is their commission, and commission is what she counts as their revenue. The generator now derives spend from commission with the same ROI targets, so every ROI, ranking and alert keeps its value; spend and budgets come out at 15% of their old size.
+- **Alternatives considered**: ROI on sales revenue (the previous basis; measures the brand's return, not the creator's); keeping the old spend and recomputing ROI on commission (rejected: nearly every campaign would show a loss, which isn't the story the mock data is meant to tell).
+- **Status**: Accepted by mae (2026-10-20).

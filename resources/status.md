@@ -1,6 +1,6 @@
 # Current Status
 
-> **Date**: 2026-10-20
+> **Last updated**: 2026-10-20
 
 ## Built
 
@@ -11,8 +11,9 @@
 - `derived` gained `activityByPlatform`, `interactionsByPlatform`, `rankings` and `opportunities`; X gained `postsCount`. Invariant checks cover them.
 - Docs consolidated (2026-10-20): `resources/design-spec.md` is the single spec. Superseded docs are in `archive/`.
 
+- Presentation cleanup (2026-10-20): project README with screenshots; 4Geeks template files removed (`README.cn.md`, `README.es.md`, `learn.json`, `.vscode/rigo-baby.jpeg`); `server.py` reduced to a static server; `requirements.txt` and `.gitignore` added; this file moved from `memory-bank/` to `resources/`.
+- Accessibility check (2026-10-20): axe-core (WCAG 2 A/AA + best practice) reports no violations at 375 and 1440px in both themes. Tabbing reaches the skip link, title, nav links, theme toggle and each scrollable table, all with a visible 2px focus ring.
+
 ## Next (see `resources/design-spec.md` §8 for what each item contains)
 
-1. Full a11y pass (automated contrast and keyboard check) against the definition of done (§11).
-2. Optional: monthly trend sparklines from `monthlySeries` (data is there, nothing renders it yet).
-3. Housekeeping: replace the 4Geeks boilerplate in `README*.md`; add `requirements.txt` (`flask`).
+1. Optional: monthly trend sparklines from `monthlySeries` (data is there, nothing renders it yet).
