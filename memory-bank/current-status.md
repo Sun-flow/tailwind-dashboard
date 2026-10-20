@@ -49,7 +49,7 @@ Building a **Tailwind CSS dashboard** for a multi-platform influencer (5 platfor
 ### Implementation Gaps 🟡
 | # | Gap | Priority | Notes |
 |---|---|---|---|
-| 1 | `index.html` does not exist yet | 🔴 Blocking | The main dashboard page has not been built. All design work is in planning docs only. First vertical slice is the next implementation milestone (Phase 2 of rollout todo). |
+| 1 | ~~`index.html` does not exist~~ | ~~🔴~~ ✅ **DONE** | **`index.html` + `app.js` built 2026-10-20** (Phase 2 vertical slice) — three-block shell, sticky anchor nav, 4 KPI cards + Chart CSS bar + products table all consuming `window.DATA`; verified at 375/768/1024 (no overflow, no console errors) |
 | 2 | ~~No mock data file (`data.js`) exists~~ | ~~🔴~~ ✅ **DONE** | **`data.js` generated 2026-10-20** by `scripts/generate-data.py` (seed 20261020), schema v1.0 — 3 products, 5 platforms, 10 campaigns, 10 monthly rows, 4 alerts, derived rollups; all invariant checks PASS |
 | 3 | No charts rendered | 🟠 Should-fix | Chart CSS approach selected but not implemented |
 | 4 | No data tables implemented | 🟠 Should-fix | Products, platforms, and campaigns tables exist only in design docs |
@@ -76,17 +76,16 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 
 ## Next Priorities (supersedes earlier list → see `resources/development-rollout-todo.md`)
 
-1. **🔴 Scaffold `index.html`** (Phase 2.1) — three-block shell + sticky anchor nav + `scroll-mt`; then Phase 2.2: ONE KPI card + ONE data table + ONE Chart CSS bar consuming `window.DATA`
-2. **🟠 Chart CSS data model** — validate actual v1 markup idiom before writing charts (rule: don't "innovate" the library's contract)
-3. **🟠 Run the dev server** (`python3 server.py`) at 375/768/1024px, smoke check (curl 200) per verification gate
-4. **🟠 Theme toggle implement** — dark default ships; light toggle = future item
-5. **🟡 Refresh `init.sh`**, archive scratchpads, add `requirements.txt`
+1. **� Complete the three blocks** (Phase 3): 3.1 finish KPI cards ✅ (4/4 done in vertical slice), 3.2 Drivers block (platform cards, monthly trend chart, campaigns), 3.3 Details block (platforms/campaigns tables + alerts), then 3.4 responsive+a11y pass, 3.5 API-ready data layer
+2. **🟠 Chart CSS data model** — ✅ validated 2026-10-20: official npm URL `cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css` (the `/gh/chartscss/chart.css@v1/` URL in rules **404s**), idiom = `<table class="charts-css bar">` + `<td style="--size">` + `<span class="data">` + `<th scope="row">` + `.show-labels`
+3. **🟠 Theme toggle implement** — dark default ships; light toggle = future item
+4. **🟡 Refresh `init.sh`**, archive scratchpads, add `requirements.txt`
 
 ---
 
 ## Current Sprint Theme
 
-**Phase: Design & Planning → Implementation.** Mock data **approved + generated** (`data.js`, invariant-checked, committed). Current focus: **Phase 2 first vertical slice** — scaffold `index.html` + one KPI card + one table + one Chart CSS bar consuming `window.DATA`, verify at 3 breakpoints.
+**Phase: Implementation (Vertical Slice).** `index.html` + `app.js` **built and verified 2026-10-20** — 4 KPI cards, Chart CSS bar (revenue by platform), products table, all consuming `window.DATA`; sticky nav + scroll-spy; verified at 375/768/1024 (grid 1→2→4 cols, no overflow, no console errors). Next: **Phase 3 — complete the three blocks**.
 
 ---
 
@@ -99,3 +98,4 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 | 2026-10-19 | Memory bank init | `memory-bank/` with 5 core files created; cross-validation pass completed ✅ |
 | 2026-10-20 | Pre-development survey | Surveyed all docs; audited online agent guidelines; created `resources/development-rollout-todo.md`, `resources/repo-alignment-audit.md`, `resources/agent-rules-proposal.md` |
 | 2026-10-20 | Mock data generated | Plan **approved** by client (all 6 questions answered); `scripts/generate-data.py` written; `data.js` generated (invariants PASS, deterministic, no internal-key leaks); rollout 1.1 → DONE; docs/memory updated |
+| 2026-10-20 | **Vertical slice built** | `index.html` + `app.js` created — 4 KPI cards + Chart CSS bar + products table consuming `window.DATA`; 3-section shell + sticky nav + scroll-spy; verified 375/768/1024 (grid 1→2→4, no overflow, no console errors); Chart CSS v1 idiom validated (npm URL, rules URL 404s); two JS/html fixes (classList multi-class, min-w-0 overflow) |

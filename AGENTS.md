@@ -19,9 +19,10 @@ A **Tailwind CSS dashboard** for tracking income, revenue, and engagement metric
 | `generate-profile-insights.md` | Planning doc used to generate `resources/profile.md`. |
 | `server.py` | Flask development server (port 3000). |
 | `data.js` | **Generated mock data module** — exposes `window.DATA` (schema v1.0). Do not hand-edit; regenerate with `python3 scripts/generate-data.py`. |
+| `app.js` | **Renderers only** — consumes `window.DATA` and renders KPIs, Chart CSS bar, tables into `index.html`. No derived-rollup computation (rollups are precomputed in `data.js` → `derived`). |
 | `scripts/generate-data.py` | **Mock data generator** — deterministic seeded Python that writes `data.js` (invariant-checked). See `resources/mock-data-plan.md`. |
 | `prompt-memory-bank-generator.md` | Spec for initializing the memory bank later. |
-| `index.html` | *(to be created)* Main dashboard page. |
+| `index.html` | Main dashboard page — three-block shell (KPIs/Drivers/Details) + sticky anchor nav; renders `window.DATA` via `app.js`. |
 
 ## Mandate
 

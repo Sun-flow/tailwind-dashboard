@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Vertical slice built — `index.html` + `app.js`** (2026-10-20):
+  - `index.html` — **NEW**: three-block dashboard shell (sections `#kpis`, `#drivers`, `#details`) with sticky inline anchor nav (Approach B), `scroll-mt-20`, skip link, exactly one `<h1>` (brand), light-first markup forced to dark default via `<html class="dark">` + Tailwind v4 `@custom-variant dark`. Loads `data.js` then `app.js`. NOTE: Chart CSS `<link>` uses `https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css` — the URL in `.agents/rules/components.md` 404s on jsdelivr.
+  - `app.js` — **NEW**: renderers-only module consuming `window.DATA` (no derived-rollup computation — uses precomputed `derived`); renders 4 KPI cards (commissions, revenue, top platform, avg engagement), a Chart CSS bar (revenue by platform, `--size` normalized to max), and the products table; scroll-spy sets `aria-current` on the active nav link. textContent-only (no innerHTML with data).
+  - `.agents/rules/components.md` — Chart CSS URL listed still references the 404 jsdelivr path; tracked in rollout todo 1.3 note (fix next touch of that file).
 - **Mock data GENERATED — schema v1.0 delivered** (2026-10-20):
   - `scripts/generate-data.py` — **NEW**: deterministic seeded Python generator (`random.Random(seed)`, default `20261020`) that enforces internal invariants (commission = revenue × 0.15, revenue = units × price, rollups == rows, monthly sums, referential integrity, numeric finiteness) and writes a committed static `data.js`. Cleanup: strips all private keys (`_aud`/`_mth_f`/`_ext`/`_rev`/`_roi`) before render; `meta.seed` reflects the actual seed.
   - `data.js` — **NEW**: the single mock-data module exposing `window.DATA` (schema v1.0): 3 products (with categories lifestyle/premium/starter), 5 platforms (each with platform-specific metric extensions), 10 campaigns (2 per platform), 10 monthly rows (2026-01→10), 4 alerts, 2 13-key derived rollups block. Byte-identical across runs; all invariant checks PASS; 0 leaked internal keys.

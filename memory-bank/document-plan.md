@@ -53,6 +53,8 @@
 | `resources/mock-data-plan.md` | **NEW (2026-10-20)** — mock data schema + research + generation method | `current-status.md`, `development-rollout-todo.md` |
 | `data.js` | **GENERATED (2026-10-20)** — mock data module exposing `window.DATA`, schema v1.0 (do not hand-edit; regenerate with `scripts/generate-data.py`) | `AGENTS.md` |
 | `scripts/generate-data.py` | **NEW (2026-10-20)** — deterministic seeded generator writing `data.js` (invariant-checked) | `AGENTS.md`, `resources/mock-data-plan.md` |
+| `index.html` | **NEW (2026-10-20)** — three-block dashboard shell (KPIs/Drivers/Details) + sticky anchor nav + skip link; dark default; loads `data.js` + `app.js` | `AGENTS.md` |
+| `app.js` | **NEW (2026-10-20)** — renderers-only; consumes `window.DATA`, renders 4 KPI cards + Chart CSS bar + products table + scroll-spy | `AGENTS.md` |
 
 ## Review & Validation Files
 
