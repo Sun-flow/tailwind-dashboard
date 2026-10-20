@@ -148,8 +148,10 @@
   }
 
   // rows: [{ label, value, display }]. Bars are scaled to the largest value × 0.75
-  // so the outside label of the longest bar still fits (design-spec §7).
+  // so the outside label of the longest bar still fits (design-spec §7); opts.scale
+  // lowers that for longer labels. Bars never shrink below a 2px sliver.
   function chartTable(opts) {
+    var scale = opts.scale || 0.75;
     var max = 0;
     opts.rows.forEach(function (r) { if (r.value > max) max = r.value; });
 
@@ -164,8 +166,8 @@
       th.setAttribute("scope", "row");
       row.appendChild(th);
 
-      var td = el("td");
-      td.style.setProperty("--size", String(max > 0 ? (r.value / max) * 0.75 : 0));
+      var td = el("td", r.value > 0 ? "min-w-0.5" : "");
+      td.style.setProperty("--size", String(max > 0 ? (r.value / max) * scale : 0));
       td.style.setProperty("--color", opts.color);
       td.appendChild(el("span", "data whitespace-nowrap text-sm tabular-nums ps-2 " + T.heading, r.display));
       row.appendChild(td);
@@ -270,21 +272,34 @@
     return node;
   }
 
-  // stages: [{ label, value, rate }]. Stages span three orders of magnitude, so
-  // they are listed with their step rate instead of drawn as linear bars.
+  // Overall funnel as linear bars with raw values and step rates, then the same
+  // stages per platform (each chart scaled to its own stage) and a step-rate table.
+  // stages: [{ label, value, display }]; byPlatform: [{ subtitle, caption, rows }].
   function funnel(opts) {
     var node = card(opts.title);
-    var list = el("ol", "space-y-2");
-    opts.stages.forEach(function (s) {
-      var item = el("li", "rounded-lg border-l-4 border-indigo-500 bg-gray-50 dark:bg-slate-700/50 px-3 py-3");
-      var line = el("div", "flex items-baseline justify-between gap-3 text-sm");
-      line.appendChild(el("span", "font-medium " + T.body, s.label));
-      line.appendChild(el("span", "font-semibold tabular-nums " + T.heading, s.value));
-      item.appendChild(line);
-      if (s.rate) item.appendChild(el("p", "mt-1 text-sm " + T.muted, s.rate));
-      list.appendChild(item);
+    var overall = el("div");
+    overall.appendChild(chartTable({
+      caption: opts.caption,
+      color: ACCENT.performance.color,
+      scale: 0.6,
+      rows: opts.stages
+    }));
+    node.appendChild(overall);
+
+    node.appendChild(el("p", "text-sm font-medium mt-6 mb-3 " + T.heading, "By platform"));
+    var grid = el("div", "grid gap-6 lg:grid-cols-3");
+    opts.byPlatform.forEach(function (stage) {
+      var col = el("div", "min-w-0");
+      col.appendChild(el("p", "text-sm mb-2 " + T.muted, stage.subtitle));
+      col.appendChild(chartTable({ caption: stage.caption, color: ACCENT.performance.color, rows: stage.rows }));
+      grid.appendChild(col);
     });
-    node.appendChild(list);
+    node.appendChild(grid);
+    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each step has its own scale, so compare platforms within a step. The table shows how many moved on to the next step."));
+
+    var rates = table(opts.rates);
+    rates.className += " mt-6";
+    node.appendChild(rates);
     return node;
   }
 
@@ -370,17 +385,56 @@
 
   /* ---------- 2. Drivers (design-spec §8) ---------- */
 
+  var driverLead = document.getElementById("driver-lead");
+  if (driverLead) {
+    driverLead.appendChild(funnel({
+      title: "Sales Funnel",
+      caption: "Impressions, link clicks and conversions across all platforms, with the share that reached each step",
+      stages: [
+        { label: "Impressions", value: derived.totalImpressions, display: count(derived.totalImpressions) },
+        { label: "Link clicks", value: derived.totalLinkClicks, display: count(derived.totalLinkClicks) + " · " + pct(derived.overallCtr) + " of views" },
+        { label: "Conversions", value: derived.totalConversions, display: count(derived.totalConversions) + " · " + pct(derived.overallConversionRate) + " of clicks" }
+      ],
+      byPlatform: [
+        { key: "impressions", subtitle: "1. Impressions", caption: "Impressions per platform" },
+        { key: "linkClicks", subtitle: "2. Link clicks", caption: "Link clicks per platform" },
+        { key: "conversions", subtitle: "3. Conversions", caption: "Conversions per platform" }
+      ].map(function (stage) {
+        return {
+          subtitle: stage.subtitle,
+          caption: stage.caption,
+          rows: DATA.platforms.map(function (p) {
+            return { label: p.name, value: p[stage.key], display: stage.key === "conversions" ? count(p[stage.key]) : compact(p[stage.key]) };
+          })
+        };
+      }),
+      rates: {
+        title: "Step rates by platform",
+        columns: [
+          { title: "Platform" },
+          { title: "Impressions", numeric: true },
+          { title: "Clicked", numeric: true },
+          { title: "Link clicks", numeric: true },
+          { title: "Bought", numeric: true },
+          { title: "Conversions", numeric: true }
+        ],
+        rows: DATA.platforms.map(function (p) {
+          return [
+            { text: p.name, className: "font-medium " + T.heading },
+            count(p.impressions),
+            { text: pct(p.ctr), className: "font-medium " + T.heading },
+            count(p.linkClicks),
+            { text: pct(p.conversionRate), className: "font-medium " + T.heading },
+            count(p.conversions)
+          ];
+        })
+      }
+    }));
+  }
+
   var driverGrid = document.getElementById("driver-grid");
   if (driverGrid) {
     [
-      funnel({
-        title: "Sales Funnel",
-        stages: [
-          { label: "Impressions", value: count(derived.totalImpressions) },
-          { label: "Link clicks", value: count(derived.totalLinkClicks), rate: pct(derived.overallCtr) + " of impressions clicked through" },
-          { label: "Conversions", value: count(derived.totalConversions), rate: pct(derived.overallConversionRate) + " of clicks bought" }
-        ]
-      }),
       barChart({
         title: "Commission Share by Platform",
         caption: "Share of total commission earned on each platform, in percent",

@@ -94,7 +94,15 @@
 ---
 
 ### [2026-10-20] Drivers and Details build-out
-- **Decision**: Build the rest of the Drivers and Details blocks (spec §8). The funnel is a stage list with step rates, not Charts.css bars. Activity and engagement are normalised onto shared columns in the generator (`derived.activityByPlatform`, `derived.interactionsByPlatform`), with `null` for "doesn't apply". Top lists, ranked by commission, and improvement opportunities are also generated (`derived.rankings`, `derived.opportunities`). Alerts use a red / amber / gray severity pill, and ROI is shown as `2.8x`.
-- **Rationale**: Impressions (3.3M) and conversions (1.4K) are three orders of magnitude apart, so linear bars would hide the stages that matter. Platforms name content and interactions differently (X replies vs comments, Twitch chat), so mapping them in the generator keeps `app.js` free of business logic. Campaigns are ranked by commission rather than ROI because tiny Twitch tests ($33 spend) top any ROI ranking. Amber gives "medium" alerts a colour that isn't read as a trend direction.
-- **Alternatives considered**: a log-scale funnel chart (rejected: hard to read correctly); stacked multi-colour activity and engagement bars (rejected: breaks "one series colour per chart" and needs a legend); a sparse activity table (tried, rejected: mostly dashes and it scrolled in a half-width card).
+- **Decision**: Build the rest of the Drivers and Details blocks (spec §8). Activity and engagement are normalised onto shared columns in the generator (`derived.activityByPlatform`, `derived.interactionsByPlatform`), with `null` for "doesn't apply". Top lists, ranked by commission, and improvement opportunities are also generated (`derived.rankings`, `derived.opportunities`). Alerts use a red / amber / gray severity pill, and ROI is shown as `2.8x`.
+- **Rationale**: Platforms name content and interactions differently (X replies vs comments, Twitch chat), so mapping them in the generator keeps `app.js` free of business logic. Campaigns are ranked by commission rather than ROI because tiny Twitch tests ($33 spend) top any ROI ranking. Amber gives "medium" alerts a colour that isn't read as a trend direction.
+- **Alternatives considered**: stacked multi-colour activity and engagement bars (rejected: breaks "one series colour per chart" and needs a legend); a sparse activity table (tried, rejected: mostly dashes and it scrolled in a half-width card).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Sales funnel drawn as linear bars, overall and per platform
+- **Decision**: The funnel is a full-width card above the Drivers grid. It shows overall impressions → link clicks → conversions as linear Charts.css bars labelled with raw values and step rates, then one chart per step across platforms, then a table of each platform's step rates. Non-zero bars are at least 2px wide.
+- **Rationale**: mae wants the size of each drop visible as a picture, even when the smallest step is a sliver, as long as the labels give the exact numbers. Per-step charts with their own scale keep every platform's bar readable, and the table gives the per-platform drop-off.
+- **Alternatives considered**: a stage list with numbers only (first version; rejected by mae as too little visual information); a log scale (rejected: understates the drop); one mini funnel per platform on a shared scale (rejected: clicks and conversions would be slivers on every platform, so platforms couldn't be compared).
 - **Status**: Accepted (2026-10-20).

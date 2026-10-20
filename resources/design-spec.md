@@ -112,7 +112,7 @@ Mobile-first. Only three steps: base (under 768px), `md:` (768px+), `lg:` (1024p
 | Block spacing | `space-y-8` | same | same |
 | Sticky nav | Title left; links and toggle right; links stay on one row | same | same |
 | KPI cards | `grid gap-4` (1 column) | `md:grid-cols-2` | `lg:grid-cols-4 lg:gap-6` |
-| Driver charts | 1 column | 1 column | `lg:grid-cols-2` |
+| Driver charts | Sales funnel first, full width, above the grid (`#driver-lead`); then 1 column | same | funnel full width; grid `lg:grid-cols-2` |
 | Detail tables | 1 column, `overflow-x-auto` | same | full width (`lg:col-span-2`) |
 | Detail lists and alerts | 1 column | 1 column | `lg:grid-cols-2` |
 | Card padding | `p-4` | `p-4` | `lg:p-6` |
@@ -138,7 +138,7 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 | `barChart({title, ...})` options | `charts: [...]` stacks several charts under their own subtitles (used for product commission + conversion rate); `table` adds a breakdown table under the chart; `breakdown` adds a "Label: detail" list; `note` adds a muted footnote |
 | `table({columns, rows})` | Table inside a focusable `overflow-x-auto` region: `w-full text-sm`; header row as tokens; `th`/`td` `px-3 py-3 whitespace-nowrap`; numeric columns `text-right tabular-nums`. A cell `{text, className, alerts}` shows `alertMarker()`s after its text. When columns overflow, a muted "Scroll sideways" hint appears under it |
 | `dataTable({title, columns, rows})` | `table()` inside a full-width `card()` (`lg:col-span-2`) |
-| `funnel({title, stages})` | Ordered list of stages: each a `bg-gray-50 dark:bg-slate-700/50 border-l-4 border-indigo-500 rounded-lg px-3 py-3` row with label and value, and a muted step-rate line |
+| `funnel({title, caption, stages, byPlatform, rates})` | Overall funnel as a Charts.css bar chart (indigo, scale 0.6 so "77,960 · 2.3% of views" fits), then "By platform": one chart per step (`lg:grid-cols-3`), each scaled to its own step, with a muted note saying so; then a `table()` of each platform's step rates and raw counts |
 | `severityBadge(severity)` / `alertMarker(alert)` | Alert severity pill (§3). The marker adds ⚠, `role="img"` and an `aria-label` with the alert message, and sits next to the related table row |
 | `listCard({title, items, ordered})` / `list(...)` | Divided list; each item has an optional badge, text, muted meta line and right-aligned value. `ordered` numbers the items |
 
@@ -159,6 +159,8 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 - Rows **must** sit inside `<tbody>`; Charts.css only styles `tbody tr`. When building with `createElement`, create the `<tbody>` explicitly.
 - `--size` is the value divided by the largest value, times 0.75, so the outside label of the biggest bar still fits at 375px.
 - Value labels get `whitespace-nowrap` so short bars don't wrap them.
+- Bars are linear, never log-scaled. A non-zero bar is at least 2px wide (`min-w-0.5`) so tiny values still show as a sliver; the value label carries the exact number.
+- A chart with long value labels may lower the 0.75 factor (`scale` option); the funnel uses 0.6.
 - Let the rows set the chart's height; don't wrap it in a fixed-height box. Charts.css sets `height: 100%`, so each chart sits in a plain `<div>`: otherwise it takes the height of the stretched grid card and pushes the content below it out of the card.
 - One series colour per chart: the accent of the metric shown.
 
@@ -174,7 +176,7 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | KPIs | Performance | Yes | Card 4: conversion rate (conversions ÷ link clicks); sub-line: CTR |
 | KPIs | Efficiency | Partly | No card. ROI and cost per conversion appear in the tables. |
 | KPIs | Retention, Satisfaction | No | No data source for an affiliate influencer |
-| Drivers | Conversion by stage | Yes | Funnel: impressions → link clicks → conversions, each with its step rate. A stage list, not Charts.css bars: the stages differ by three orders of magnitude, so linear bars would hide conversions |
+| Drivers | Conversion by stage | Yes | Funnel: impressions → link clicks → conversions as linear bars labelled with raw values and step rates, the same three steps per platform, and a step-rate table. Conversions are a sliver next to impressions; that is the point, and the labels give the numbers |
 | Drivers | Performance by platform | Yes | Bar chart: commission share per platform |
 | Drivers | Performance by product | Yes | Two bar charts in one card: commission (emerald) and conversion rate (indigo) per product |
 | Drivers | Activity | Yes | Bar chart of content pieces per platform (sky), with a "Platform: 144 stories · 52 reels or shorts" breakdown list |
@@ -186,7 +188,7 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | Details | Alerts | Yes | Conversion drops and spikes, shown next to the related row as well as in the list |
 | Details | Top lists | Yes | "Top Performers" card: top products, top 3 platforms, top 3 campaigns, all by commission. "Improvement Opportunities" is its own card |
 
-Card order. **Drivers**: Sales funnel, Commission share by platform, Performance by product, Activity by platform, Engagement by platform (the lone last card spans full width). **Details**: Alerts and Improvement opportunities side by side, then the Platforms, Products and Campaigns tables, then Top performers (full width, three columns from `md:`).
+Card order. **Drivers**: Sales funnel (full width, above the grid), then Commission share by platform, Performance by product, Activity by platform, Engagement by platform. **Details**: Alerts and Improvement opportunities side by side, then the Platforms, Products and Campaigns tables, then Top performers (full width, three columns from `md:`).
 
 ## 9. Theme toggle
 
