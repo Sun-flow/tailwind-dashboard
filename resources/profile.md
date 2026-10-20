@@ -16,7 +16,7 @@ They need a **single reporting dashboard** that consolidates income, revenue, an
 ## Platforms
 
 | Platform | Type | Notes |
-|---|---|
+|---|---|---|
 | Instagram | Photos / Stories / Reels | Likely a primary engagement driver |
 | YouTube | Long-form & Shorts video | Revenue from ad sense + promoted links |
 | TikTok | Short-form video | High viral potential, growing audience |
@@ -42,7 +42,7 @@ The client promotes **3 products** with a **15% commission** on sales generated 
 The dashboard must answer these questions at a glance:
 
 | Goal | Metric / KPI |
-|---|---|
+|---|---|---|
 | 💰 **How much commission am I earning?** | Total commissions = units sold × price × 15%, broken out by product and platform |
 | 📦 **Which products are generating the most revenue?** | Product-level revenue ranking (units sold × price) |
 | 📈 **How well are my ads converting?** | Conversion rate = conversions ÷ reach, per platform and per product |

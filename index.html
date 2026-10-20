@@ -6,18 +6,21 @@
   <meta name="description" content="Influencer dashboard — income, revenue, and engagement across platforms and products.">
   <title>Influencer Dashboard</title>
 
-  <!-- Tailwind CSS v4 (CDN, no build step). `@custom-variant dark` makes the
-       `dark:` variant key off the `.dark` class on <html>, so dark is the
-       default and a future toggle is a single class flip. -->
+  <!-- Apply the saved theme before first paint (design-spec §9). Dark unless the user saved "light". -->
+  <script>
+    try {
+      if (localStorage.getItem("theme") === "light") document.documentElement.classList.remove("dark");
+    } catch (e) {}
+  </script>
+
+  <!-- Tailwind CSS v4 (CDN, no build step). `@custom-variant dark` keys `dark:` off the `.dark` class on <html>. -->
   <style type="text/tailwindcss">
     @custom-variant dark (&:where(.dark, .dark *));
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.3"></script>
 
-  <!-- Chart CSS v1 — the only allowed visualization library.
-       NOTE: the jsdelivr /gh/chartscss/chart.css@v1/ URL in rules 404s on jsdelivr;
-       the official install docs (chartscss.org/docs/installation) specify this npm URL. -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
+  <!-- Charts.css — the only visualization library (design-spec §2, §7). -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css@1.2.0/dist/charts.min.css">
 </head>
 
 <body class="bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 antialiased">
@@ -26,91 +29,66 @@
   <a href="#main"
      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50
             focus:bg-sky-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg
-            focus:outline-2 focus:outline-offset-2 focus:outline-sky-400">
+            focus:outline-2 focus:outline-offset-2 focus:outline-sky-500">
     Skip to content
   </a>
 
-  <!-- Sticky inline anchor nav (Approach B) -->
-  <header class="sticky top-0 z-50 backdrop-blur bg-gray-50/90 dark:bg-slate-900/90 border-b border-gray-200 dark:border-slate-800">
-    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <h1 class="flex items-center gap-2 text-sm sm:text-base font-bold tracking-tight">
-          <span aria-hidden="true" class="text-lg">📊</span>
-          <a href="#main" class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 rounded">Influencer Dashboard</a>
+  <!-- Sticky inline anchor nav (design-spec §1, §5) -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-gray-50/90 dark:bg-slate-900/90 border-b border-gray-200 dark:border-slate-700">
+    <div class="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8">
+      <div class="flex items-center justify-between gap-2 h-16">
+        <h1 class="flex items-center gap-2 text-base sm:text-lg font-bold tracking-tight">
+          <span aria-hidden="true">📊</span>
+          <a href="#main" class="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500">Influencer Dashboard</a>
         </h1>
-        <nav aria-label="Dashboard sections">
-          <ul class="flex items-center gap-1 sm:gap-2">
-            <li><a href="#kpis" class="nav-link inline-flex items-center min-h-[44px] px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors duration-200">KPIs</a></li>
-            <li><a href="#drivers" class="nav-link inline-flex items-center min-h-[44px] px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors duration-200">Drivers</a></li>
-            <li><a href="#details" class="nav-link inline-flex items-center min-h-[44px] px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors duration-200">Details</a></li>
-            <li class="hidden sm:inline-flex"><a href="#main" class="inline-flex items-center min-h-[44px] px-3 rounded-md text-sm font-medium text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 transition-colors duration-200">↑ Top</a></li>
-          </ul>
-        </nav>
+        <div class="flex items-center gap-1">
+          <nav aria-label="Dashboard sections">
+            <ul class="flex items-center">
+              <li><a href="#kpis" class="nav-link inline-flex items-center min-h-11 px-2 md:px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 transition-colors duration-200 motion-reduce:transition-none">KPIs</a></li>
+              <li><a href="#drivers" class="nav-link inline-flex items-center min-h-11 px-2 md:px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 transition-colors duration-200 motion-reduce:transition-none">Drivers</a></li>
+              <li><a href="#details" class="nav-link inline-flex items-center min-h-11 px-2 md:px-3 rounded-md text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 transition-colors duration-200 motion-reduce:transition-none">Details</a></li>
+              <li class="hidden md:list-item"><a href="#main" class="inline-flex items-center min-h-11 px-3 rounded-md text-sm font-medium text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 transition-colors duration-200 motion-reduce:transition-none">↑ Top</a></li>
+            </ul>
+          </nav>
+          <button id="theme-toggle" type="button" aria-pressed="true" aria-label="Dark mode"
+                  class="inline-flex items-center justify-center gap-1.5 min-h-11 min-w-11 px-2 md:px-3 rounded-md border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-600 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 transition-colors duration-200 motion-reduce:transition-none">
+            <span aria-hidden="true">🌙</span>
+            <span class="hidden md:inline">Dark mode</span>
+          </button>
+        </div>
       </div>
     </div>
   </header>
 
-  <main id="main" class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+  <main id="main" class="max-w-screen-xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-8">
 
-    <!-- 🔝 TOP BLOCK: Outcome KPIs -->
+    <!-- TOP BLOCK: Outcome KPIs -->
     <section id="kpis" class="scroll-mt-20" aria-labelledby="kpis-heading">
       <h2 id="kpis-heading" class="text-xl font-semibold mb-4">Key Outcomes</h2>
-      <div id="kpi-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <!-- KPI cards rendered by app.js from window.DATA -->
+      <div id="kpi-grid" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        <!-- kpiCard() × 4, rendered by app.js -->
       </div>
     </section>
 
-    <!-- 📊 MIDDLE BLOCK: Drivers -->
+    <!-- MIDDLE BLOCK: Drivers -->
     <section id="drivers" class="scroll-mt-20" aria-labelledby="drivers-heading">
       <h2 id="drivers-heading" class="text-xl font-semibold mb-4">Drivers</h2>
-      <div class="grid gap-4 lg:grid-cols-2">
-        <article class="min-w-0 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 lg:p-6">
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400 mb-4">Revenue by Platform</h3>
-          <div class="overflow-x-auto">
-            <div class="min-w-[280px]">
-              <div id="platform-revenue-chart" class="h-64 md:h-80 w-full">
-                <!-- Chart CSS bar chart rendered by app.js from window.DATA -->
-              </div>
-            </div>
-          </div>
-        </article>
-        <!-- More driver cards arrive in Phase 3 -->
+      <div id="driver-grid" class="grid gap-4 lg:grid-cols-2 lg:gap-6 lg:*:last:odd:col-span-2">
+        <!-- barChart() cards, rendered by app.js -->
       </div>
     </section>
 
-    <!-- 📋 BOTTOM BLOCK: Operational Details -->
+    <!-- BOTTOM BLOCK: Operational Details -->
     <section id="details" class="scroll-mt-20" aria-labelledby="details-heading">
       <h2 id="details-heading" class="text-xl font-semibold mb-4">Operational Details</h2>
-      <div class="grid gap-4 lg:grid-cols-2">
-        <article class="min-w-0 bg-white dark:bg-slate-800 rounded-xl shadow-sm p-4 lg:p-6">
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400 mb-4">Products</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm divide-y divide-gray-200 dark:divide-slate-700">
-              <thead>
-                <tr class="bg-gray-50 dark:bg-slate-700/50 text-left text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
-                  <th class="px-3 py-3">Product</th>
-                  <th class="px-3 py-3">Category</th>
-                  <th class="px-3 py-3 text-right">Price</th>
-                  <th class="px-3 py-3 text-right">Units Sold</th>
-                  <th class="px-3 py-3 text-right">Revenue</th>
-                  <th class="px-3 py-3 text-right">Commission</th>
-                  <th class="px-3 py-3 text-right">Conv. Rate</th>
-                  <th class="px-3 py-3">Top Channel</th>
-                </tr>
-              </thead>
-              <tbody id="products-tbody" class="divide-y divide-gray-200 dark:divide-slate-700">
-                <!-- Products table rows rendered by app.js from window.DATA -->
-              </tbody>
-            </table>
-          </div>
-        </article>
-        <!-- More detail cards arrive in Phase 3 -->
+      <div id="detail-grid" class="grid gap-4 lg:grid-cols-2 lg:gap-6 lg:*:last:odd:col-span-2">
+        <!-- dataTable() cards (full width) and list cards, rendered by app.js -->
       </div>
     </section>
 
   </main>
 
-  <footer class="border-t border-gray-200 dark:border-slate-800 py-6 text-center text-xs text-gray-400 dark:text-slate-500">
+  <footer class="border-t border-gray-200 dark:border-slate-700 py-6 text-center text-xs text-gray-500 dark:text-slate-400">
     <p>Generated mock data · schema v1.0 · period <span id="footer-period"></span></p>
   </footer>
 

@@ -2,7 +2,7 @@
 
 > **Date**: 2026-10-20
 > **Status**: Proposed — awaiting approval before generating `data.js`
-> **Companion docs**: `resources/profile.md` (persona/products), `resources/dashboard-design.md` (3-block layout), `resources/development-rollout-todo.md` (Phase 1.1 — the #1 blocker this doc closes)
+> **Companion docs**: `resources/profile.md` (persona/products), `resources/design-spec.md` (layout and section content); planning history in `archive/`
 
 ---
 
@@ -16,7 +16,7 @@ This document defines **what data we generate**, **why each metric exists**, and
 
 ## 2. Research Summary — What Influencers Actually Track
 
-Sources fetched this session (sources that 403'd/404'd are recorded in `memory-bank/changelog.md`; not blocking):
+Sources fetched this session (sources that 403'd/404'd are recorded in `archive/memory-bank/changelog.md`; not blocking):
 
 ### 2.1 Core KPI categories (Influencer Marketing Hub — influencer marketing KPIs)
 Influencer performance is tracked across six funnel categories, **top to bottom**:
