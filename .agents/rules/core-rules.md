@@ -18,6 +18,4 @@
 
 ## Project facts
 
-- Client persona, products and platforms: `resources/profile.md`.
-- Tailwind CSS v4 browser build from the CDN; no build step. Charts.css is the only other library.
-- `server.py` serves the static files: `python3 server.py`.
+The client is in `resources/profile.md`. The stack, commands and docs map are in `memory-bank/context.md`.

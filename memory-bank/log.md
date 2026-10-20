@@ -1,7 +1,11 @@
 # Session Log
 
 > **Last updated**: 2026-10-20
-> Newest first. One entry per session: date, where it ran, what changed (link the PR or commit), what was left open. Keep about 15 entries; move older ones to `archive/memory-bank/log-archive.md`. Entries before this file existed were rebuilt from git history.
+> Newest first. One entry per session: date, where it ran, what changed (link the PR or commit), what was left open. Keep about 15 entries. When there are more, move the oldest to `archive/memory-bank/log-archive.md` (create it the first time). Entries before this file existed were rebuilt from git history.
+
+### 2026-10-20 · Memory bank hardening (Claude Code, cloud)
+- `scripts/check-memory.py` now checks `§` references against the spec and lists commits made after the last memory update. Added `scripts/screenshots.py` (+ `requirements-dev.txt`) and the Copilot pointer `.github/copilot-instructions.md`. "In progress" items now name branch, PR and environment. `AGENTS.md`'s file table lists only code, and the docs map lives in `context.md`. A cold read by a fresh agent found and fixed some duplicated instructions.
+- Open: nothing.
 
 ### 2026-10-20 · Memory bank revived (Claude Code, cloud)
 - Revived `memory-bank/` as five files (`README`, `context`, `status`, `log`, `notes`) and wrote a project-agnostic prompt to create and maintain one, `.agents/prompts/memory-bank.md`, which supersedes `archive/prompt-memory-bank-generator.md`. Moved the status file here from `resources/` as `status.md`. Added `CLAUDE.md` (points at `AGENTS.md`) and `scripts/check-memory.py`.

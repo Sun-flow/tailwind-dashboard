@@ -9,8 +9,11 @@
 - Checked at 375, 768, 1024 and 1440px in both themes: no console errors, no horizontal page scroll. axe-core (WCAG 2 A/AA and best practice) reports no violations at 375 and 1440px in both themes; keyboard focus is visible throughout.
 - Repo presentable: project README with hero screenshots, template leftovers removed, `requirements.txt` added.
 - Memory bank revived as this folder, with a project-agnostic prompt in `.agents/prompts/memory-bank.md`.
+- Tooling: `scripts/check-memory.py` (memory drift, broken `§` references, commits the memory hasn't caught up with) and `scripts/screenshots.py` (reproduces the committed screenshots exactly; reports console errors and horizontal scroll).
 
 ## In progress
+
+Format: `- what — branch, PR, environment (started date)`. Remove the line when it merges or is dropped.
 
 - Nothing.
 

@@ -10,9 +10,9 @@ A one-page Tailwind CSS dashboard showing an influencer's commissions, revenue, 
 
 Your memory doesn't carry over between sessions, so this repo keeps it for you in `memory-bank/`.
 
-1. Read `memory-bank/README.md`, then the files it lists (`context.md`, `status.md`, the top of `log.md`, and `notes.md` when relevant). That gives you what the project is, how to run it, where things stand and what the last session left open.
+1. Open `memory-bank/README.md` and follow its start-of-session steps. They tell you what the project is, how to run it, where things stand and what the last session left open.
 2. Read `resources/design-spec.md`, **the single, binding spec** for layout, colour, type, components, content, and definition of done, before any visual change.
-3. Read `.agents/rules/core-rules.md`, which says how to work in this repo.
+3. Read `.agents/rules/core-rules.md`, which says how to work in this repo, including how to change the spec instead of inventing new standards.
 
 Look up as needed: `resources/profile.md` (the client), `resources/decisions.md` (why decisions were made), `resources/mock-data-plan.md` (data schema), `resources/brief.md` (the original brief).
 
@@ -20,11 +20,9 @@ Look up as needed: `resources/profile.md` (the client), `resources/decisions.md`
 
 Before you finish or hand work back, update the memory bank as `memory-bank/README.md` describes: `status.md`, a new entry at the top of `log.md`, anything learned in `notes.md`. Then run `python3 scripts/check-memory.py` and commit the memory changes with the work. Write things down as you learn them; sessions can end without warning.
 
-## Don't invent new standards
+## Code
 
-If the spec is missing something or seems wrong, propose a change to `resources/design-spec.md` and log it in `resources/decisions.md`. Don't add a rule elsewhere, and don't copy spec values into the memory bank; refer to spec sections instead.
-
-## Key files
+Commands are in `memory-bank/context.md`, and the docs map is its "Where facts live" table.
 
 | Path | Purpose |
 |---|---|
@@ -32,12 +30,9 @@ If the spec is missing something or seems wrong, propose a change to `resources/
 | `app.js` | Renderers only. Consumes `window.DATA`; one render function per component. |
 | `data.js` | Generated mock data (`window.DATA`). Don't hand-edit. |
 | `scripts/generate-data.py` | Deterministic generator for `data.js`, with invariant checks. |
-| `scripts/check-memory.py` | Checks the memory bank for broken paths, unmapped files and size budgets. |
+| `scripts/screenshots.py` | Retakes `resources/screenshots/` and checks for console errors and horizontal scroll. |
+| `scripts/check-memory.py` | Checks the memory bank and lists commits it hasn't caught up with. |
 | `server.py` | Flask dev server on port 3000. |
-| `memory-bank/` | Persistent agent memory. Commands are in `memory-bank/context.md`. |
-| `.agents/prompts/memory-bank.md` | Project-agnostic prompt for creating, reconciling or maintaining a memory bank. |
-| `resources/screenshots/` | Full-page screenshots at 375/768/1024/1440 in both themes, plus the README hero images. Retake them after a visual change. |
-| `archive/` | Superseded planning docs, rules and the first memory bank. History only; not binding. |
 
 ## Decision log format
 
