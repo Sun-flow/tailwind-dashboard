@@ -129,7 +129,7 @@
 - **Decision**: The README describes the project, how to run it, and the layout, with theme-aware hero screenshots. 4Geeks template leftovers are removed (`README.cn.md`, `README.es.md`, `learn.json`, `.vscode/rigo-baby.jpeg`, the `app.py` branch in `server.py`). `memory-bank/current-status.md` moves to `resources/status.md` so all current docs sit in `resources/`. `AGENTS.md` and `.agents/rules/` stay, labelled in the README as instructions for coding agents; `archive/` stays, labelled as history.
 - **Rationale**: A visitor should land on a README about this dashboard, not a coding-bootcamp template, and see at a glance which files are the product, which are the spec, and which are history or agent tooling.
 - **Alternatives considered**: deleting `archive/` (rejected: the decision log and data plan cite it, and it's cheap to keep once labelled); moving `resources/` to `docs/` (rejected: churns every cross-reference for a naming gain only).
-- **Status**: Accepted (2026-10-20).
+- **Status**: Accepted (2026-10-20) The status-file move is superseded by [Memory bank revived as lean agent memory].
 
 ---
 
@@ -138,3 +138,11 @@
 - **Rationale**: mae: the influencer's return is their commission, and commission is what she counts as their revenue. The generator now derives spend from commission with the same ROI targets, so every ROI, ranking and alert keeps its value; spend and budgets come out at 15% of their old size.
 - **Alternatives considered**: ROI on sales revenue (the previous basis; measures the brand's return, not the creator's); keeping the old spend and recomputing ROI on commission (rejected: nearly every campaign would show a loss, which isn't the story the mock data is meant to tell).
 - **Status**: Accepted by mae (2026-10-20).
+
+---
+
+### [2026-10-20] Memory bank revived as lean agent memory
+- **Decision**: `memory-bank/` comes back as five files: `README.md` (map and maintenance rules), `context.md`, `status.md` (moved from `resources/status.md`), `log.md` (session handoffs) and `notes.md` (mae's preferences and gotchas). `AGENTS.md` sends every agent there first and says how to update it at the end of a session; `CLAUDE.md` points Claude Code at `AGENTS.md`. `.agents/prompts/memory-bank.md` is a project-agnostic prompt for creating and maintaining a memory bank in any repo, replacing `archive/prompt-memory-bank-generator.md`. `scripts/check-memory.py` checks for broken paths, unmapped files and size budgets.
+- **Rationale**: mae works across environments and agents (Claude Code in the cloud, DeepSeek in a Codespace), and nothing outside the repo carries over, so the repo has to hold the working memory. The first memory bank had the right idea but failed through duplication and ceremony: it restated design rules that then contradicted the real ones, cited line numbers that broke on every edit, and needed two reviewer agents and a dozen review files per pass. The successor points to the spec instead of copying it, cites paths and sections, keeps files small, and replaces reviewer passes with one mechanical check.
+- **Alternatives considered**: leaving status in `resources/` and only pointing to it (rejected: agents update it every session, so it belongs with the other files they maintain); restoring the old five files (rejected: two of them duplicated the spec and a third duplicated git); one big memory file (rejected: mixes stable context with per-session churn, so it grows and goes stale together).
+- **Status**: Accepted (2026-10-20).

@@ -1,3 +1,5 @@
+> **Superseded (2026-10-20)** by `.agents/prompts/memory-bank.md`. Kept for history.
+
 # Memory Bank Generator Prompt
 
 > **What this is**: A single, self-contained prompt that an AI coding agent can read as its **first instruction** in any repository, then generate and maintain a durable "memory bank" for that repo. Instantiate it at your repo root (e.g., as `AGENTS.md`, `.clinerules/memory-bank.md`, or a `docs/` file referenced from `AGENTS.md`). It is generic by design — adapt names to your stack, keep the rules.
