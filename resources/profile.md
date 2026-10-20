@@ -46,7 +46,7 @@ The dashboard must answer these questions at a glance:
 | 💰 **How much commission am I earning?** | Total commissions = units sold × price × 15%, broken out by product and platform |
 | 📦 **Which products are generating the most revenue?** | Product-level revenue ranking (units sold × price) |
 | 📈 **How well are my ads converting?** | Conversion rate = conversions ÷ reach, per platform and per product |
-| 🏆 **Which platforms generate the best return?** | Return = (revenue generated − costs) per platform; ROI ratio |
+| 🏆 **Which platforms generate the best return?** | Return = (commission earned − costs) per platform; ROI ratio |
 | ❤️ **What is the engagement rate by platform and by product?** | Engagement rate = (likes + comments + shares) ÷ impressions, split by platform and product post |
 
 ---

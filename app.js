@@ -660,7 +660,7 @@
           { title: "Product" },
           { title: "Price", numeric: true },
           { title: "Units Sold", numeric: true },
-          { title: "Revenue", numeric: true },
+          { title: "Sales Value", numeric: true },
           { title: "Commission", numeric: true },
           { title: "Conv. Rate", numeric: true },
           { title: "Top Channel" }

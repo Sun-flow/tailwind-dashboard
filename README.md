@@ -64,4 +64,4 @@ The schema is described in [`resources/mock-data-plan.md`](resources/mock-data-p
 
 ## Status
 
-The dashboard is complete against the design spec. It has no console errors, no horizontal scroll at 375 to 1440px, and no axe-core accessibility violations in either theme. ROI is computed on sales revenue. Possible next steps are in [`resources/status.md`](resources/status.md).
+The dashboard is complete against the design spec. It has no console errors, no horizontal scroll at 375 to 1440px, and no axe-core accessibility violations in either theme. ROI is the creator's return on commission: (commission − spend) ÷ spend. Possible next steps are in [`resources/status.md`](resources/status.md).
