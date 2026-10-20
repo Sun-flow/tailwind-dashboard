@@ -236,6 +236,8 @@ derived: {
   interactionsByPlatform: { x: { likes: 12554, comments: 1941 /* replies */, shares: 4623 /* reposts */, saves: 5673 /* bookmarks */ }, ... },
   rankings: { products: [...], platforms: [...], campaigns: [...] }, // ids, best first, by commission
   opportunities: [{ platformId: "x", message: "..." }, ...]          // short, data-backed suggestions
+  funnelMix: { all: { impressions, linkClicks, conversions, clickedPct, boughtPct, clickedOnlyPct, viewedOnlyPct }, instagram: {...}, ... }
+  // boughtPct + clickedOnlyPct + viewedOnlyPct = 100 (shares of impressions)
 }
 ```
 

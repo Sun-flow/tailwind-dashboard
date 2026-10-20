@@ -63,6 +63,7 @@ Write every class light-first with its `dark:` pair. Use these pairs and nothing
 | Hover row | `hover:bg-gray-50 dark:hover:bg-slate-700/40` |
 | Focus ring | `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500` |
 | Active nav link | `text-sky-700 dark:text-sky-400` |
+| Funnel segments (one hue, darkest = furthest step) | bought `indigo-700` / dark `indigo-300`; clicked, didn't buy `indigo-400` / dark `indigo-500`; saw, didn't click `gray-300` / dark `slate-600`. Bars set them as `[--color:var(--color-indigo-700)] dark:[--color:var(--color-indigo-300)]` (the only arbitrary-property classes, because inline `--color` can't follow the theme); legend swatches use the matching `bg-` classes |
 | Alert severity pill | high `bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300`; medium `bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300`; low `bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300` |
 
 ### KPI accents (one per KPI category, nothing else)
@@ -138,7 +139,7 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 | `barChart({title, ...})` options | `charts: [...]` stacks several charts under their own subtitles (used for product commission + conversion rate); `table` adds a breakdown table under the chart; `breakdown` adds a "Label: detail" list; `note` adds a muted footnote |
 | `table({columns, rows})` | Table inside a focusable `overflow-x-auto` region: `w-full text-sm`; header row as tokens; `th`/`td` `px-3 py-3 whitespace-nowrap`; numeric columns `text-right tabular-nums`. A cell `{text, className, alerts}` shows `alertMarker()`s after its text. When columns overflow, a muted "Scroll sideways" hint appears under it |
 | `dataTable({title, columns, rows})` | `table()` inside a full-width `card()` (`lg:col-span-2`) |
-| `funnel({title, caption, stages, byPlatform, rates})` | Overall funnel as a Charts.css bar chart (indigo, scale 0.6 so "77,960 · 2.3% of views" fits), then "By platform": one chart per step (`lg:grid-cols-3`), each scaled to its own step, with a muted note saying so; then a `table()` of each platform's step rates and raw counts |
+| `funnel({title, caption, rows, rates})` | Legend, then a Charts.css `bar multiple stacked` chart: one 100% bar for all platforms and one per platform, split into bought / clicked, didn't buy / saw, didn't click (shares of impressions from `derived.funnelMix`). Each row label shows the name plus "2.3% clicked" and "0.04% bought" lines (`--labels-size: 8rem`, rows `min-h-18`). Segments carry a `title` and screen-reader text. Then a muted note that each bar is 100% of impressions, and a `table()` of step rates and raw counts |
 | `severityBadge(severity)` / `alertMarker(alert)` | Alert severity pill (§3). The marker adds ⚠, `role="img"` and an `aria-label` with the alert message, and sits next to the related table row |
 | `listCard({title, items, ordered})` / `list(...)` | Divided list; each item has an optional badge, text, muted meta line and right-aligned value. `ordered` numbers the items |
 
@@ -160,7 +161,8 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 - `--size` is the value divided by the largest value, times 0.75, so the outside label of the biggest bar still fits at 375px.
 - Value labels get `whitespace-nowrap` so short bars don't wrap them.
 - Bars are linear, never log-scaled. A non-zero bar is at least 2px wide (`min-w-0.5`) so tiny values still show as a sliver; the value label carries the exact number.
-- A chart with long value labels may lower the 0.75 factor (`scale` option); the funnel uses 0.6.
+- A chart with long value labels may lower the 0.75 factor (`scale` option).
+- Percentages of impressions below 0.1% keep two decimals (`0.04%`) so they don't read as `0.0%`.
 - Let the rows set the chart's height; don't wrap it in a fixed-height box. Charts.css sets `height: 100%`, so each chart sits in a plain `<div>`: otherwise it takes the height of the stretched grid card and pushes the content below it out of the card.
 - One series colour per chart: the accent of the metric shown.
 
@@ -176,7 +178,7 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | KPIs | Performance | Yes | Card 4: conversion rate (conversions ÷ link clicks); sub-line: CTR |
 | KPIs | Efficiency | Partly | No card. ROI and cost per conversion appear in the tables. |
 | KPIs | Retention, Satisfaction | No | No data source for an affiliate influencer |
-| Drivers | Conversion by stage | Yes | Funnel: impressions → link clicks → conversions as linear bars labelled with raw values and step rates, the same three steps per platform, and a step-rate table. Conversions are a sliver next to impressions; that is the point, and the labels give the numbers |
+| Drivers | Conversion by stage | Yes | Funnel: 100% stacked horizontal bars (all platforms, then each platform) split into bought / clicked but didn't buy / saw but didn't click, labelled with the clicked and bought shares, plus a step-rate table. Everyone who bought also clicked and saw, so each bar sums to 100% of impressions. The buying sliver is tiny; the labels give the numbers |
 | Drivers | Performance by platform | Yes | Bar chart: commission share per platform |
 | Drivers | Performance by product | Yes | Two bar charts in one card: commission (emerald) and conversion rate (indigo) per product |
 | Drivers | Activity | Yes | Bar chart of content pieces per platform (sky), with a "Platform: 144 stories · 52 reels or shorts" breakdown list |

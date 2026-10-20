@@ -105,4 +105,12 @@
 - **Decision**: The funnel is a full-width card above the Drivers grid. It shows overall impressions → link clicks → conversions as linear Charts.css bars labelled with raw values and step rates, then one chart per step across platforms, then a table of each platform's step rates. Non-zero bars are at least 2px wide.
 - **Rationale**: mae wants the size of each drop visible as a picture, even when the smallest step is a sliver, as long as the labels give the exact numbers. Per-step charts with their own scale keep every platform's bar readable, and the table gives the per-platform drop-off.
 - **Alternatives considered**: a stage list with numbers only (first version; rejected by mae as too little visual information); a log scale (rejected: understates the drop); one mini funnel per platform on a shared scale (rejected: clicks and conversions would be slivers on every platform, so platforms couldn't be compared).
+- **Status**: Superseded by [Sales funnel as 100% stacked bars].
+
+---
+
+### [2026-10-20] Sales funnel as 100% stacked bars
+- **Decision**: Each platform (and "All platforms") gets one horizontal bar that is 100% of its impressions. The bar is split into bought, clicked but didn't buy, and saw but didn't click, using one indigo hue (darkest = furthest step) and neutral gray for "didn't click". `derived.funnelMix` holds the shares, which an invariant checks sum to 100. The step-rate table stays.
+- **Rationale**: mae's reference was a 100% stacked bar chart. The funnel steps are nested (a buyer also clicked and saw), so the three buckets partition impressions and a part-to-whole bar is truthful. One hue keeps the steps reading as an order, not as unrelated categories.
+- **Alternatives considered**: linear bars per step (the previous version; replaced at mae's request); a zoomed bar of clicks only (not built yet: it would make the bought/clicked split easier to see, but the whole-funnel framing is what mae asked for).
 - **Status**: Accepted (2026-10-20).

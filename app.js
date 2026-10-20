@@ -33,6 +33,12 @@
     up: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
     down: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
     activeNav: ["text-sky-700", "dark:text-sky-400"],
+    // Funnel segments: one hue, darkest = furthest step; "didn't click" stays neutral.
+    funnel: {
+      bought: { bar: "[--color:var(--color-indigo-700)] dark:[--color:var(--color-indigo-300)]", swatch: "bg-indigo-700 dark:bg-indigo-300" },
+      clicked: { bar: "[--color:var(--color-indigo-400)] dark:[--color:var(--color-indigo-500)]", swatch: "bg-indigo-400 dark:bg-indigo-500" },
+      viewed: { bar: "[--color:var(--color-gray-300)] dark:[--color:var(--color-slate-600)]", swatch: "bg-gray-300 dark:bg-slate-600" }
+    },
     severity: {
       high: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
       medium: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
@@ -72,6 +78,12 @@
 
   function compact(value) {
     return Number(value).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // Shares of impressions can be tiny; keep two decimals below 0.1% so they don't read as 0.0%.
+  function share(value) {
+    var n = Number(value);
+    return (n > 0 && n < 0.1 ? n.toFixed(2) : n.toFixed(1)) + "%";
   }
 
   function ratio(value) {
@@ -272,30 +284,60 @@
     return node;
   }
 
-  // Overall funnel as linear bars with raw values and step rates, then the same
-  // stages per platform (each chart scaled to its own stage) and a step-rate table.
-  // stages: [{ label, value, display }]; byPlatform: [{ subtitle, caption, rows }].
+  // 100% stacked bars: every impression ends in exactly one segment (bought,
+  // clicked but didn't buy, saw but didn't click). Rows: [{ label, sub, mix }],
+  // where mix is a derived.funnelMix entry and sub is the muted lines under the label. Then a legend and a step-rate table.
   function funnel(opts) {
     var node = card(opts.title);
-    var overall = el("div");
-    overall.appendChild(chartTable({
-      caption: opts.caption,
-      color: ACCENT.performance.color,
-      scale: 0.6,
-      rows: opts.stages
-    }));
-    node.appendChild(overall);
+    var segments = [
+      { key: "bought", pct: "boughtPct", label: "Bought", count: "conversions" },
+      { key: "clicked", pct: "clickedOnlyPct", label: "Clicked, didn't buy" },
+      { key: "viewed", pct: "viewedOnlyPct", label: "Saw, didn't click" }
+    ];
 
-    node.appendChild(el("p", "text-sm font-medium mt-6 mb-3 " + T.heading, "By platform"));
-    var grid = el("div", "grid gap-6 lg:grid-cols-3");
-    opts.byPlatform.forEach(function (stage) {
-      var col = el("div", "min-w-0");
-      col.appendChild(el("p", "text-sm mb-2 " + T.muted, stage.subtitle));
-      col.appendChild(chartTable({ caption: stage.caption, color: ACCENT.performance.color, rows: stage.rows }));
-      grid.appendChild(col);
+    var legend = el("ul", "flex flex-wrap gap-x-4 gap-y-1 mb-4 text-sm " + T.body);
+    segments.forEach(function (seg) {
+      var li = el("li", "flex items-center gap-2");
+      var swatch = el("span", "inline-block w-3 h-3 rounded-sm " + T.funnel[seg.key].swatch);
+      swatch.setAttribute("aria-hidden", "true");
+      li.appendChild(swatch);
+      li.appendChild(el("span", null, seg.label));
+      legend.appendChild(li);
     });
-    node.appendChild(grid);
-    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each step has its own scale, so compare platforms within a step. The table shows how many moved on to the next step."));
+    node.appendChild(legend);
+
+    var tableNode = el("table", "charts-css bar multiple stacked show-labels hide-data data-spacing-10");
+    tableNode.style.setProperty("--labels-size", "8rem");
+    tableNode.appendChild(el("caption", "sr-only", opts.caption));
+    var tbody = el("tbody");
+    opts.rows.forEach(function (r) {
+      // Two-line labels need taller rows than Charts.css gives a bar by default.
+      var row = el("tr", "min-h-18");
+      var th = el("th", "text-sm text-left pe-3");
+      th.setAttribute("scope", "row");
+      // One block inside the th: Charts.css lays th out as a flex row.
+      var label = el("div", "min-w-0");
+      label.appendChild(el("p", "font-medium " + T.heading, r.label));
+      r.sub.forEach(function (line) { label.appendChild(el("p", "font-normal " + T.muted, line)); });
+      th.appendChild(label);
+      row.appendChild(th);
+      segments.forEach(function (seg) {
+        var value = r.mix[seg.pct];
+        var td = el("td", (value > 0 ? "min-w-0.5 " : "") + T.funnel[seg.key].bar);
+        td.style.setProperty("--size", String(value / 100));
+        var text = seg.label + ": " + share(value) + " of impressions";
+        td.title = r.label + " · " + text;
+        td.appendChild(el("span", "data sr-only", text));
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+    tableNode.appendChild(tbody);
+    var wrap = el("div");
+    wrap.appendChild(tableNode);
+    node.appendChild(wrap);
+
+    node.appendChild(el("p", "mt-3 text-sm " + T.muted, "Each bar is 100% of that platform's impressions. Everyone who bought also clicked, and everyone who clicked also saw the post."));
 
     var rates = table(opts.rates);
     rates.className += " mt-6";
@@ -389,23 +431,13 @@
   if (driverLead) {
     driverLead.appendChild(funnel({
       title: "Sales Funnel",
-      caption: "Impressions, link clicks and conversions across all platforms, with the share that reached each step",
-      stages: [
-        { label: "Impressions", value: derived.totalImpressions, display: count(derived.totalImpressions) },
-        { label: "Link clicks", value: derived.totalLinkClicks, display: count(derived.totalLinkClicks) + " · " + pct(derived.overallCtr) + " of views" },
-        { label: "Conversions", value: derived.totalConversions, display: count(derived.totalConversions) + " · " + pct(derived.overallConversionRate) + " of clicks" }
-      ],
-      byPlatform: [
-        { key: "impressions", subtitle: "1. Impressions", caption: "Impressions per platform" },
-        { key: "linkClicks", subtitle: "2. Link clicks", caption: "Link clicks per platform" },
-        { key: "conversions", subtitle: "3. Conversions", caption: "Conversions per platform" }
-      ].map(function (stage) {
+      caption: "Share of impressions that bought, clicked without buying, or saw without clicking, for all platforms and for each platform",
+      rows: [{ id: "all", name: "All platforms" }].concat(DATA.platforms).map(function (p) {
+        var mix = derived.funnelMix[p.id];
         return {
-          subtitle: stage.subtitle,
-          caption: stage.caption,
-          rows: DATA.platforms.map(function (p) {
-            return { label: p.name, value: p[stage.key], display: stage.key === "conversions" ? count(p[stage.key]) : compact(p[stage.key]) };
-          })
+          label: p.name,
+          mix: mix,
+          sub: [share(mix.clickedPct) + " clicked", share(mix.boughtPct) + " bought"]
         };
       }),
       rates: {
@@ -413,9 +445,9 @@
         columns: [
           { title: "Platform" },
           { title: "Impressions", numeric: true },
-          { title: "Clicked", numeric: true },
+          { title: "Clicked (of views)", numeric: true },
           { title: "Link clicks", numeric: true },
-          { title: "Bought", numeric: true },
+          { title: "Bought (of clicks)", numeric: true },
           { title: "Conversions", numeric: true }
         ],
         rows: DATA.platforms.map(function (p) {

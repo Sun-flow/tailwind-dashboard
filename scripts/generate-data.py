@@ -553,6 +553,22 @@ def _driver_rollups(data: dict) -> None:
             row[col] = pl[pl_id]["engagement"].get(src, 0)
         d["interactionsByPlatform"][pl_id] = row
 
+    # Funnel mix: every impression ends in exactly one bucket, so the three
+    # shares sum to 100 (conversions are a subset of clicks, clicks of impressions).
+    def mix(impressions, clicks, conversions):
+        return {
+            "impressions": impressions,
+            "linkClicks": clicks,
+            "conversions": conversions,
+            "clickedPct": round(clicks / impressions * 100, 4),
+            "boughtPct": round(conversions / impressions * 100, 4),
+            "clickedOnlyPct": round((clicks - conversions) / impressions * 100, 4),
+            "viewedOnlyPct": round((impressions - clicks) / impressions * 100, 4),
+        }
+    d["funnelMix"] = {"all": mix(d["totalImpressions"], d["totalLinkClicks"], d["totalConversions"])}
+    for p in data["platforms"]:
+        d["funnelMix"][p["id"]] = mix(p["impressions"], p["linkClicks"], p["conversions"])
+
     # Top lists: ids ranked best first.
     d["rankings"] = {
         "products": [p["id"] for p in sorted(data["products"], key=lambda x: -x["commission"])],
@@ -736,6 +752,10 @@ def run_invariants(data: dict) -> bool:
     check(len(d["rankings"]["campaigns"]) == len(data["campaigns"]), "rankings.campaigns lists every campaign")
     check(d["rankings"]["platforms"][0] == d["topPlatform"], "rankings.platforms starts with topPlatform")
     check(len(d["opportunities"]) >= 1, "at least one opportunity present")
+    for key, m in d["funnelMix"].items():
+        check(m["conversions"] <= m["linkClicks"] <= m["impressions"], f"funnelMix {key} steps only shrink")
+        check(abs(m["boughtPct"] + m["clickedOnlyPct"] + m["viewedOnlyPct"] - 100) < 0.01,
+              f"funnelMix {key} shares sum to 100")
     # 6. finite numbers throughout
     for p in data["platforms"]:
         check(all(isinstance(x, (int, float)) for x in (p["followers"], p["reach"], p["impressions"],
