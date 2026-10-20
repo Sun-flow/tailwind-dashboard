@@ -46,7 +46,7 @@
 | # | Gap | Priority | Notes |
 |---|---|---|---|
 | 1 | `index.html` does not exist yet | 🔴 Blocking | The main dashboard page has not been built. All design work is in planning docs only. First vertical slice is the next implementation milestone (Phase 2 of rollout todo). |
-| 2 | No mock data file (`data.js`) exists | 🔴 Blocking | Location decided (`data.js`), schema still needs definition (gap #10) |
+| 2 | No mock data file (`data.js`) exists | 🔴 Blocking | Location decided (`data.js`); **schema drafted** in `resources/mock-data-plan.md` — awaiting approval before generation |
 | 3 | No charts rendered | 🟠 Should-fix | Chart CSS approach selected but not implemented |
 | 4 | No data tables implemented | 🟠 Should-fix | Products, platforms, and campaigns tables exist only in design docs |
 | 5 | Sticky inline anchor nav not built | 🟡 Nice-to-have | Approach B defined and documented; part of vertical slice |
@@ -61,7 +61,7 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 | 7 | No `requirements.txt` | 🟢 Low | Phase 0.5 of rollout todo; add a single `flask` entry |
 | 8 | No CI workflows | 🟢 Low | Not needed at current stage (smoke check is shell command, not CI) |
 | 9 | ADC log created | ✅ DONE | `resources/decisions.md` — 4 entries logged (theme, data.js, nav, verification) |
-| 10 | Mock data **schema** undefined | 🔴 | **#1 blocker** — renderers depend on it; next big planning task |
+| 10 | Mock data **schema** | 🟡 DRAFTED | **#1 blocker was the undefined schema** → `resources/mock-data-plan.md` (2026-10-20): schema + research + deterministic generator. Awaiting approval before generating `data.js` |
 | 11 | Theme | ✅ RESOLVED | Dark default + light toggle (toggle = future implementation item) |
 | 12 | `components.md` nav conflict | ✅ RESOLVED | Re-worded: no overlay menus, sticky inline anchor nav (Approach B) |
 | 13 | `.agents/scripts/init.sh` stale | 🟠 | Pre-memory-bank state; update or archive in Phase 0 repo alignment |
@@ -74,7 +74,7 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 
 1. **🔴 Draft + finalize proposed agent rules** — `resources/agent-rules-proposal.md`; land edits per its §D
 2. **🔴 Reconcile rule/docs drift** — nav, theme, no-build-step, `components.md`
-3. **🔴 Define mock data schema** — one source, API-ready
+3. **� Drafted → awaiting approval**: mock data schema — `resources/mock-data-plan.md` (global `DATA`, 5 platforms, 3 products, campaigns, monthly series, alerts, derived rollups; seeded `generate-data.py`)
 4. **🟠 Scaffold `index.html`** — three-block shell + sticky nav + one vertical slice + verify loop
 5. **🟠 Chart CSS data model** — validate actual v1 markup idiom before writing charts
 6. **🟡 Refresh `init.sh`**, archive scratchpads, add `requirements.txt`
@@ -83,7 +83,7 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 
 ## Current Sprint Theme
 
-**Phase: Design & Planning → Pre-dev Audit → Implementation.** Survey (2026-10-20) produced rollout todo + rules proposal. Next session: finalize rules with human, then begin Phase 1 (mock data schema) and Phase 2 (first vertical slice of `index.html`).
+**Phase: Design & Planning → Pre-dev Audit → Implementation.** Rules landed + committed. Mock data plan (schema + generation) drafted 2026-10-20 and awaiting approval; next once approved: generator + `data.js`, then Phase 2 first vertical slice of `index.html`.
 
 ---
 

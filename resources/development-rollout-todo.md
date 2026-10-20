@@ -38,7 +38,7 @@ then by **information depth** (closing gaps before code), then by **implementati
 
 | # | Task | Priority | Why It Matters |
 |---|---|---|---|
-| 1.1 | **Define the mock data schema** (products, platforms, campaigns, KPI rollups) | 🔴 | The #1 missing artifact — everything renders from it; must live in one place and be reusable |
+| 1.1 | **Define the mock data schema** (products, platforms, campaigns, KPI rollups) | 🔴 | **DONE (draft 2026-10-20)** → `resources/mock-data-plan.md` — schema + research + deterministic generation method. Awaiting approval before generating `data.js` |
 | 1.2 | **Decide theme** (dark vs light) as a hard requirement | 🟠 | `dashboard-design.md` keeps both as options; an implementation needs one |
 | 1.3 | **Choose Chart CSS data model** — verify actual Chart CSS v1 API (`.column`, `.bar`, `.line` idiomatic markup) | 🟠 | Spec references Chart CSS but no real markup has been validated against the library; avoid "innovating" on the library's contract |
 | 1.4 | **Define trend/alert/rules** (what anomaly counts as an alert, the threshold) | 🟡 | Alerts are "nice-to-have" but should be *defined*, not invented at render time |

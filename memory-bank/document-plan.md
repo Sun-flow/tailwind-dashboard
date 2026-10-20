@@ -50,6 +50,7 @@
 | `resources/repo-alignment-audit.md` | **NEW (2026-10-20)** — docs survey, repo alignment, guidelines audit | `current-status.md` |
 | `resources/agent-rules-proposal.md` | **NEW (2026-10-20)** — draft agent rules proposal | `current-status.md` |
 | `resources/decisions.md` | **NEW (2026-10-20)** — ADC log (theme, data.js, nav, verification) | `current-status.md` |
+| `resources/mock-data-plan.md` | **NEW (2026-10-20)** — mock data schema + research + generation method | `current-status.md`, `development-rollout-todo.md` |
 
 ## Review & Validation Files
 

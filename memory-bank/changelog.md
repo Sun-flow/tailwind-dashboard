@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mock data plan — schema + generation method** (2026-10-20):
+  - `resources/mock-data-plan.md` — **NEW**: research-backed schema for the single `data.js` module (products, platforms with per-platform metric extensions, campaigns with attribution windows, monthly series, alerts, derived KPI rollups) mapped to the 3 dashboard blocks, plus recommended deterministic generation method (`scripts/generate-data.py`, seeded `random.Random`, invariant checks, no-build-step-safe). Satisfies rollout task 1.1 + rule B5.
+  - `resources/development-rollout-todo.md` — task 1.1 (mock data schema) marked **DONE (draft)**, awaiting approval before generating `data.js`
 - **Rules proposal FINALIZED + landed** (2026-10-20):
   - `resources/agent-rules-proposal.md` — status set to **FINALIZED**; all §E open questions resolved and binding (theme: dark default + light toggle; data: `data.js` module; nav: keep inline anchor nav; verification: B4 gate + new B4.5 HTML sanity check)
   - `resources/decisions.md` — **NEW** ADC (Architecture Decision Context) log with 4 accepted entries (dark theme + toggle, `data.js` module, sticky inline anchor nav, verification gate)
