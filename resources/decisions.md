@@ -114,3 +114,11 @@
 - **Rationale**: mae's reference was a 100% stacked bar chart. The funnel steps are nested (a buyer also clicked and saw), so the three buckets partition impressions and a part-to-whole bar is truthful. mae asked to keep the per-step charts: the stacked bars show the drop-off within each platform, the per-step charts compare platforms at each step. One hue keeps the steps reading as an order, not as unrelated categories.
 - **Alternatives considered**: linear bars per step (the previous version; replaced at mae's request); a zoomed bar of clicks only (not built yet: it would make the bought/clicked split easier to see, but the whole-funnel framing is what mae asked for).
 - **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Rank campaigns by commission and by ROI with a minimum spend
+- **Decision**: Top performers lists campaigns twice: by commission, and by ROI among campaigns that spent at least the median (`derived.roiMinSpend`, $1,884 with the default seed).
+- **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $34 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
+- **Alternatives considered**: commission only (hides efficiency); ROI only (tiny tests win); a fixed dollar threshold (rejected: the median adapts if the data changes).
+- **Status**: Proposed. Awaiting mae's choice; ROI's basis (sales revenue or commission) is also open.

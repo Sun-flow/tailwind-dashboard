@@ -587,7 +587,7 @@
 
     var topCard = card("Top Performers");
     topCard.className += " lg:col-span-2";
-    var topGrid = el("div", "grid gap-6 md:grid-cols-3");
+    var topGrid = el("div", "grid gap-6 md:grid-cols-2 lg:grid-cols-4");
     [
       {
         subtitle: "Products by commission",
@@ -609,11 +609,20 @@
           var c = campaignById[id];
           return { text: c.name, meta: month(c.period) + " · " + ratio(c.roi) + " ROI", value: usd(c.commission) };
         })
+      },
+      {
+        subtitle: "Campaigns by return",
+        note: "Only campaigns that spent at least " + usd(derived.roiMinSpend) + ".",
+        items: derived.rankings.campaignsByRoi.slice(0, 3).map(function (id) {
+          var c = campaignById[id];
+          return { text: c.name, meta: month(c.period) + " · " + usd(c.spend) + " spent", value: ratio(c.roi) };
+        })
       }
     ].forEach(function (group) {
       var col = el("div", "min-w-0");
       col.appendChild(el("p", "text-sm font-medium mb-3 " + T.heading, group.subtitle));
       col.appendChild(list({ ordered: true, items: group.items }));
+      if (group.note) col.appendChild(el("p", "mt-3 text-sm " + T.muted, group.note));
       topGrid.appendChild(col);
     });
     topCard.appendChild(topGrid);

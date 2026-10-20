@@ -188,9 +188,9 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | Details | Platforms table | Yes | Reach, engagement rate, conversions, commission, ROI |
 | Details | Campaigns table | Yes | Month, product, platform, spend, sales (results), ROI; newest first |
 | Details | Alerts | Yes | Conversion drops and spikes, shown next to the related row as well as in the list |
-| Details | Top lists | Yes | "Top Performers" card: top products, top 3 platforms, top 3 campaigns, all by commission. "Improvement Opportunities" is its own card |
+| Details | Top lists | Yes | "Top Performers" card: top products, top 3 platforms and top 3 campaigns by commission, plus top 3 campaigns by ROI among those that spent at least the median (`derived.roiMinSpend`), with a note giving that minimum. Four columns at `lg:`, two at `md:`. "Improvement Opportunities" is its own card |
 
-Card order. **Drivers**: Sales funnel (full width, above the grid), then Commission share by platform, Performance by product, Activity by platform, Engagement by platform. **Details**: Alerts and Improvement opportunities side by side, then the Platforms, Products and Campaigns tables, then Top performers (full width, three columns from `md:`).
+Card order. **Drivers**: Sales funnel (full width, above the grid), then Commission share by platform, Performance by product, Activity by platform, Engagement by platform. **Details**: Alerts and Improvement opportunities side by side, then the Platforms, Products and Campaigns tables, then Top performers (full width).
 
 ## 9. Theme toggle
 

@@ -569,11 +569,17 @@ def _driver_rollups(data: dict) -> None:
     for p in data["platforms"]:
         d["funnelMix"][p["id"]] = mix(p["impressions"], p["linkClicks"], p["conversions"])
 
-    # Top lists: ids ranked best first.
+    # Top lists: ids ranked best first. ROI is only ranked for campaigns with at
+    # least median spend; a $33 test's ratio swings on a single sale.
+    spends = sorted(c["spend"] for c in data["campaigns"])
+    median_spend = spends[len(spends) // 2]
+    d["roiMinSpend"] = median_spend
     d["rankings"] = {
         "products": [p["id"] for p in sorted(data["products"], key=lambda x: -x["commission"])],
         "platforms": [p["id"] for p in sorted(data["platforms"], key=lambda x: -x["commission"])],
         "campaigns": [c["id"] for c in sorted(data["campaigns"], key=lambda x: -x["commission"])],
+        "campaignsByRoi": [c["id"] for c in sorted((c for c in data["campaigns"] if c["spend"] >= median_spend),
+                                                   key=lambda x: -x["roi"])],
     }
 
     # Improvement opportunities: one short, data-backed suggestion each.
@@ -597,9 +603,7 @@ def _driver_rollups(data: dict) -> None:
     })
     worst_cmp = min(data["campaigns"], key=lambda c: c["roi"])
     # Only compare against campaigns with real spend; tiny tests inflate ROI.
-    spends = sorted(c["spend"] for c in data["campaigns"])
-    median_spend = spends[len(spends) // 2]
-    best_cmp = max((c for c in data["campaigns"] if c["spend"] >= median_spend), key=lambda c: c["roi"])
+    best_cmp = [c for c in data["campaigns"] if c["id"] == d["rankings"]["campaignsByRoi"][0]][0]
     opps.append({
         "campaignId": worst_cmp["id"],
         "message": f"{worst_cmp['name']} returned {worst_cmp['roi']:.1f}x. Shift budget toward "
@@ -752,6 +756,10 @@ def run_invariants(data: dict) -> bool:
     check(len(d["rankings"]["campaigns"]) == len(data["campaigns"]), "rankings.campaigns lists every campaign")
     check(d["rankings"]["platforms"][0] == d["topPlatform"], "rankings.platforms starts with topPlatform")
     check(len(d["opportunities"]) >= 1, "at least one opportunity present")
+    roi_ids = d["rankings"]["campaignsByRoi"]
+    check(len(roi_ids) >= 3, "rankings.campaignsByRoi has at least 3 campaigns")
+    check(all(c["spend"] >= d["roiMinSpend"] for c in data["campaigns"] if c["id"] in roi_ids),
+          "rankings.campaignsByRoi only counts campaigns at or above roiMinSpend")
     for key, m in d["funnelMix"].items():
         check(m["conversions"] <= m["linkClicks"] <= m["impressions"], f"funnelMix {key} steps only shrink")
         check(abs(m["boughtPct"] + m["clickedOnlyPct"] + m["viewedOnlyPct"] - 100) < 0.01,

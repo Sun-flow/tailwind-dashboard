@@ -822,10 +822,12 @@ window.DATA = {
         "viewedOnlyPct": 99.2832,
       },
     },
+    "roiMinSpend": 1884.06,
     "rankings": {
       "products": ["prod-c", "prod-a", "prod-b"],
       "platforms": ["tiktok", "youtube", "instagram", "x", "twitch"],
       "campaigns": ["cmp-06", "cmp-05", "cmp-03", "cmp-02", "cmp-04", "cmp-01", "cmp-08", "cmp-07", "cmp-09", "cmp-10"],
+      "campaignsByRoi": ["cmp-03", "cmp-02", "cmp-05", "cmp-06", "cmp-01"],
     },
     "opportunities": [
       {
