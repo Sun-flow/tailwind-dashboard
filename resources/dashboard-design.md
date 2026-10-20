@@ -40,7 +40,7 @@ From `resources/profile.md` — a **multi-platform influencer** promotes 3 produ
 | **Operational data tables** | 🟠 Should-have | Products table, platforms table, campaigns table — sortable columns |
 | **Alert indicators** | 🟡 Nice-to-have | Visual flags for anomalies (sharp conversion drops, unexpected spikes) |
 | **Filtered "top" lists** | 🟡 Nice-to-have | "Top products", "top platforms", "improvement opportunities" |
-| **Static mock data** | 🔴 Must-have | Embedded JSON or JS data to drive all visuals initially |
+| **Static mock data** | 🔴 Must-have | Separate `data.js` JS module drives all visuals initially (see AUD data architecture) |
 | **API-ready architecture** | 🟢 Future | Data layer isolated so real API integration can replace mocks later |
 
 ---
@@ -52,19 +52,19 @@ From `resources/profile.md` — a **multi-platform influencer** promotes 3 produ
 
 ### Layout Approach
 
-*— to be decided —*
+— decided: single scrolling page; sticky header with inline anchor nav (Approach B, see below). No hamburger/sidebar.
 
 ### Charting Approach
 
-*— to be decided —*
+— decided: **Chart CSS** (the only allowed visualization library), per `.agents/rules/components.md`.
 
 ### Data Architecture
 
-*— to be decided —*
+— decided: **separate `data.js` module** (API-ready — a future API swap changes one file). See `resources/decisions.md` "Mock data lives in a separate data.js module" and `resources/agent-rules-proposal.md` §B5.
 
 ### Color Palette & Theme
 
-*— to be decided —*
+— decided: **dark default** (`slate-900` bg) with a light-mode toggle allowed (future implementation item). See `resources/decisions.md` "Dark theme default with light-mode toggle".
 
 ---
 
@@ -115,10 +115,13 @@ From `resources/profile.md` — a **multi-platform influencer** promotes 3 produ
 
 ### Color Palette Brainstorm
 
-**Theme direction: "Professional dark" (dashboard-appropriate)**
-- Background: `slate-900` or `gray-900` dark mode with a `gray-50` / `white` light mode option
-- Cards: `white` / `gray-50` with `shadow-sm` / `shadow-md` depth
-- Accent colors for KPI categories:
+> **RESOLVED 2026-10-20**: dark is the default; light is a future toggle. Build markup light-first with `dark:` utilities so both states work.
+
+**Theme direction: "Professional dark" (DEFAULT, binds the build)**
+- Background: `slate-900` (dark mode default); `gray-50` / `white` are the light-mode states behind the `dark:` variant
+- Cards: `bg-white dark:bg-slate-800` with `dark:border-slate-700`, `shadow-sm` / `shadow-md` depth
+- Text hierarchy: `gray-900 dark:text-slate-100` headings, `gray-600 dark:text-slate-400` body, `gray-400 dark:text-slate-500` secondary labels
+- Accent colors for KPI categories (used in both themes):
   - Volume / Scale → `blue-500` / `blue-600`
   - Revenue / Money → `green-500` / `emerald-500`
   - Engagement → `purple-500` / `violet-500`
@@ -128,10 +131,9 @@ From `resources/profile.md` — a **multi-platform influencer** promotes 3 produ
   - Efficiency → `cyan-500`
 - Trend indicators: `green-500` ▲ for positive, `red-500` ▼ for negative
 - Data visualization bars: use the accent color of the metric being shown
-- Text hierarchy: `gray-900` headings, `gray-600` body, `gray-400` secondary labels
 
-**Alternative: "Clean white" (light mode)**
-- Background: `gray-50`
+**Light mode (via toggle / `dark:` variant)**
+- Background: `gray-50` (this is the non-`dark:` base)
 - Cards: `white` with `border border-gray-200`
 - Same accent color scheme, with darker text
 

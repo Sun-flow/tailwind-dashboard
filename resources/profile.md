@@ -58,7 +58,7 @@ The dashboard must answer these questions at a glance:
 3. **Product breakdown** — per-product revenue, units sold, commission earned
 4. **Platform breakdown** — per-platform metrics (followers, engagement, revenue, ROI)
 5. **Conversion table** — ad conversion rates by product × platform
-6. **Mock data** — embedded JSON or static JS data to drive the dashboard
+6. **Mock data** — separate `data.js` JS module to drive the dashboard (API-ready — see `resources/decisions.md`)
 7. **Charts / visual indicators** — lightweight, no heavy charting library (CSS bars, simple Canvas, or SVG)
 
 ---

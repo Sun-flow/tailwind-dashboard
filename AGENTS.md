@@ -43,3 +43,37 @@ For Tailwind CSS v4 via CDN (no build step), add to `<head>`:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 ```
+
+## Project Story
+
+**Why this exists**: Our client — a multi-platform influencer — has income/engagement data scattered across Instagram, YouTube, TikTok, Twitter/X, and Twitch, plus spreadsheets and manual notes. They can't see at a glance how much commission they earn, which products and platforms pay off, or how ads convert.
+
+**Who we're building for**: One influencer persona (see `resources/profile.md`), 3 products (A $50, B $120, C $80), 15% commission. A single reporting dashboard that consolidates it all.
+
+**What success looks like**: A single scrolling page answering 5 core questions — How much am I earning? Which products? How are ads converting? Which platforms return best? What's engagement per platform/product? — readable in ~10 seconds, zero-training, shareable with a manager or sponsor.
+
+**Most important rule** (read first in `.agents/rules/`): **verify your work before claiming "done"** — see `core-rules.md`.
+
+## There Is No Such Thing As A Free Launch
+
+Real work has a cost in effort, context, and time. If a task can be done with less churn — fewer rewrites, fewer throwaway commits, less re-reading — do that. Concretely:
+
+- **Try the simplest correct thing first.** Before reaching for "API-ready", "configurable", "themed", or any future-proofing, ask: does the current task need it? If not, defer it and note the decision.
+- **The rules are a floor, not a ceiling.** Reads are cheap; guessing is expensive. Prefer reading the actual file/spec/rule over inventing from memory.
+- **A wrong approach abandoned early is success.** If a path isn't working after two attempts, stop and reassess — don't paper over it.
+- **Small, focused diffs beat one giant rewrite.** Every commit should be reviewable in a glance.
+
+## Architecture Decision Context (ADC) — Log Format
+
+When a decision has lasting consequences (tech choice, data shape, nav/theme, verification approach), log it as a short entry in `resources/decisions.md`:
+
+```
+### [YYYY-MM-DD] Title
+- **Decision**: one line
+- **Rationale**: why (evidence: file:line where useful)
+- **Alternatives considered**: what we didn't pick and why
+- **Status**: Accepted / Superseded by [title] / Deferred
+```
+
+- One entry per decision. Keep it short — a paragraph of rationale, not an essay.
+- Update the entry's `Status` when a decision is superseded. Never delete an entry (archive path: `resources/decisions.md`).

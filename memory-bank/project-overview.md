@@ -34,7 +34,7 @@ An **Influencer Dashboard** — a single-page, responsive Tailwind CSS dashboard
 | KPI summary cards (4 top-level metrics) | Real-time data / WebSockets |
 | Product & platform breakdown tables | User authentication |
 | Conversion funnel visualization | Database persistence |
-| Static mock data (embedded JSON/JS) | External API integrations |
+| Static mock data in separate `data.js` module | External API integrations |
 | Tailwind CSS v4 via CDN (no build step) | Custom CSS (beyond Tailwind utils) |
 | Chart CSS for data visualization | Paid charting libraries (Chart.js, D3, etc.) |
 | Flask dev server (`server.py`) | Production deployment config |
@@ -45,8 +45,9 @@ An **Influencer Dashboard** — a single-page, responsive Tailwind CSS dashboard
 - [ ] All KPI cards, driver charts, and data tables render with mock data
 - [ ] Responsive at mobile (375px), tablet (768px), and desktop (1024px+)
 - [ ] Sticky navigation header with anchor links to the three blocks
-- [ ] Mock data embedded as JS module or JSON
+- [ ] Mock data in separate `data.js` module (`resources/decisions.md`)
 - [ ] Consistent component patterns (KPI cards, section blocks, tables, badges)
+- [ ] Dark theme default (`slate-900`); light-toggle ready via `dark:` utilities (`resources/decisions.md`)
 - [ ] No custom CSS beyond Tailwind utilities and Chart CSS
 
 ## Key Files
@@ -58,6 +59,10 @@ An **Influencer Dashboard** — a single-page, responsive Tailwind CSS dashboard
 | `.agents/rules/` | Agent behavioral rules, component/layout/a11y/semantic-html conventions |
 | `resources/profile.md` | Client persona — multi-platform influencer, 3 products, 15% commission |
 | `resources/dashboard-design.md` | Design plan — layout strategy, color palette, typography, component patterns |
+| `resources/development-rollout-todo.md` | **NEW (2026-10-20)** — prioritized to-do list for implementation |
+| `resources/repo-alignment-audit.md` | **NEW (2026-10-20)** — docs survey, repo alignment, guidelines audit |
+| `resources/agent-rules-proposal.md` | **NEW (2026-10-20)** — draft agent rules proposal |
+| `resources/decisions.md` | **NEW (2026-10-20)** — ADC log (theme, data.js, nav, verification) |
 | `server.py` | Flask dev server (port 3000) — serves static files |
 | `generate-dashboard-guidelines.md` | Scratchpad doc that produced `resources/dashboard-design.md` |
 | `generate-profile-insights.md` | Scratchpad doc that produced `resources/profile.md` |
@@ -84,12 +89,12 @@ An **Influencer Dashboard** — a single-page, responsive Tailwind CSS dashboard
 │  │    <section id="drivers">  — Charts & breakdowns    │  │
 │  │    <section id="details">  — Tables, alerts, lists  │  │
 │  │  </main>                                            │  │
-│  │  <script> — Mock data (embedded JSON/JS)            │  │
-│  └─────────────────────────────────────────────────────┘  │
+│  <script src="data.js"> — Mock data module          │  │
+└─────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────┘
 ```
 
-Data flow: Mock data embedded in `index.html` → vanilla JS renders into DOM using Tailwind/Chart CSS classes. No fetch/XHR needed for initial prototype.
+Data flow: Mock data module (`data.js`) → vanilla JS renders into DOM using Tailwind/Chart CSS classes. A future API integration swaps the module contents only — renderers are unchanged.
 
 ## Agent Rules & Entry Points
 

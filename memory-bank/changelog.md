@@ -10,7 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Memory bank initialized** (`memory-bank/`) with 5 core files:
+- **Rules proposal FINALIZED + landed** (2026-10-20):
+  - `resources/agent-rules-proposal.md` — status set to **FINALIZED**; all §E open questions resolved and binding (theme: dark default + light toggle; data: `data.js` module; nav: keep inline anchor nav; verification: B4 gate + new B4.5 HTML sanity check)
+  - `resources/decisions.md` — **NEW** ADC (Architecture Decision Context) log with 4 accepted entries (dark theme + toggle, `data.js` module, sticky inline anchor nav, verification gate)
+  - `.agents/rules/core-rules.md` — added Explore→Plan→Code→Verify workflow, Verification Gate (curl 200 / HTML sanity / 3-breakpoint screens), Writer/Reviewer pattern, DoD language; confirmed mock data in `data.js`
+  - `.agents/rules/components.md` — clarified "no navigation" → no overlay menus, documented sticky inline anchor nav (Approach B) + `scroll-mt`; added Motion & Interaction State (focus-visible, reduced-motion) and Chart CSS responsive/aspect notes
+  - `.agents/rules/layout.md` — confirmed **no build step**; added Theme section (dark default `slate-900`, light toggle via `dark:` variant, build light-first); added chart breakpoint guidance
+  - `.agents/rules/accessibility.md` — added Focus & Motion section and the accessible theme-toggle pattern (`aria-pressed`, visible label, localStorage + `prefers-color-scheme`)
+  - `AGENTS.md` — added **Project Story**, **TANSTAAFL** (there is no such thing as a free lunch — do the simple correct thing), and **ADC log format** sections
+  - `resources/dashboard-design.md` — theme resolved (dark default + light toggle) in Color Palette Brainstorm + Proposed Implementation Methods; static mock data row updated to `data.js` module
+- **Pre-development survey & resources** (2026-10-20):
+  - `resources/development-rollout-todo.md` — prioritized to-do list (repo alignment → information depth → implementation)
+  - `resources/repo-alignment-audit.md` — full docs survey, repo alignment findings, guidelines audit (AGENTS.md standard, Claude Code best practices, real-world AGENTS.md examples)
+  - `resources/agent-rules-proposal.md` — draft rules (behavioral + engineering) + Definition-of-Done checklist for a high-quality build
   - `project-overview.md` — project scope, goals, architecture, key files
   - `tech-stack.md` — verified tech stack, commands, dependencies, constraints
   - `current-status.md` — status ledger with what works, gaps, next priorities

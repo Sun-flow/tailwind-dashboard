@@ -5,10 +5,18 @@
 ## Tailwind CSS
 
 - Use **Tailwind CSS v4 CDN** via a single external stylesheet — `<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>` in `<head>`.
+- **No build step.** No `npx tailwindcss`, no config file, no compilation. All styling flows through the CDN runtime + utility classes.
 - No inline `<style>` blocks; apply all styling through Tailwind utility classes in HTML markup.
 - **Never** mix in other CSS frameworks. Chart CSS (https://chartscss.org/) is the **only** allowed CSS visualization library — and only for KPI charts and driver visualizations where a semantic chart structure adds clarity.
 - **Never** use `float` or `display: inline-block` for page structure. Use Flexbox (`flex`) for layout and component alignment.
 - Extend with CSS custom properties (`--var`) in the Tailwind config or a minimal global CSS block for consistent spacing, colors, and breakpoints — only where Tailwind utilities are insufficient.
+
+## Theme: Dark default + light toggle
+
+- **Default is dark**: page background `slate-900`, cards `slate-800`/`slate-900` with `slate-700` borders, text `slate-100`/`slate-400`.
+- **Light mode allowed** as a future toggle (sun/moon button in sticky header, `prefers-color-scheme` OS-aware via the `dark:` variant, persisted to `localStorage`).
+- **Build light-first with `dark:` utilities** so both states work from the same markup: default (light) styles + `dark:bg-slate-900`, `dark:text-slate-100`, etc. The toggle is a class flip on `<html>`.
+- The toggle itself is **not required** for the first vertical slice — but the markup must be ready for it.
 
 ## Mobile-First Design
 
@@ -26,3 +34,4 @@ This is a **mobile-first** dashboard. All layout work starts from the smallest s
 4. **Avoid pixel-based sizes.** Never use `w-[...]` or `h-[...]` fixed-size utilities. Use relative units: `w-full`, `w-1/2`, `max-w-screen-xl`, `min-h-screen`, Tailwind spacing (`p-4`, `gap-4`, `space-y-4`).
 5. **Use Tailwind spacing utilities.** Gutter between blocks: `space-y-6` or `space-y-8`. Padding: `p-4` mobile, `lg:p-6` desktop. Gap in grids: `gap-4` or `gap-6`.
 6. **Touch targets.** All interactive elements (buttons, links, sortable headers) must be at least 44×44px — use `min-h-[44px]` or ensure padding/clip yields that size.
+7. **Chart breakpoints**: a chart that is a full-width block on desktop (`lg:`) may be a horizontally-scrolling island on mobile — wrap in `overflow-x-auto` rather than shrinking below readability. Charts share the same breakpoint ladder (none / `sm:` / `md:` / `lg:`) as the rest of the layout.
