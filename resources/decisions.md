@@ -1,7 +1,7 @@
 # Architecture Decision Context (ADC) Log
 
 > **Date created**: 2026-10-20
-> **Purpose**: Record decisions that have lasting consequences — tech choice, data shape, nav, theme, verification approach. Maintained per the "Architecture Decision Context (ADC) — Log Format" section in `AGENTS.md`.
+> **Purpose**: Record decisions that have lasting consequences — tech choice, data shape, nav, theme, verification approach. Entry format: the "Decision log format" section in `AGENTS.md`.
 > **Rule**: one entry per decision; keep it short; update `Status` when superseded; never delete an entry.
 
 ---
@@ -122,3 +122,11 @@
 - **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $34 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
 - **Alternatives considered**: commission only (hides efficiency); ROI only (tiny tests win); a fixed dollar threshold (rejected: the median adapts if the data changes).
 - **Status**: Accepted by mae (2026-10-20). Open question: ROI is computed on sales revenue; if campaign spend is the creator's own money, it should use commission instead.
+
+---
+
+### [2026-10-20] Repo layout for presentation
+- **Decision**: The README describes the project, how to run it, and the layout, with theme-aware hero screenshots. 4Geeks template leftovers are removed (`README.cn.md`, `README.es.md`, `learn.json`, `.vscode/rigo-baby.jpeg`, the `app.py` branch in `server.py`). `memory-bank/current-status.md` moves to `resources/status.md` so all current docs sit in `resources/`. `AGENTS.md` and `.agents/rules/` stay, labelled in the README as instructions for coding agents; `archive/` stays, labelled as history.
+- **Rationale**: A visitor should land on a README about this dashboard, not a coding-bootcamp template, and see at a glance which files are the product, which are the spec, and which are history or agent tooling.
+- **Alternatives considered**: deleting `archive/` (rejected: the decision log and data plan cite it, and it's cheap to keep once labelled); moving `resources/` to `docs/` (rejected: churns every cross-reference for a naming gain only).
+- **Status**: Accepted (2026-10-20).
