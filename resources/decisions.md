@@ -121,7 +121,7 @@
 - **Decision**: Top performers lists campaigns twice: by commission, and by ROI among campaigns that spent at least the median (`derived.roiMinSpend`, $1,884 with the default seed).
 - **Rationale**: Ranked by ROI alone, two Twitch tests that spent about $34 each come first (6.4x, 5.8x). Their ratios swing on a single sale. The two lists show the biggest earners and the most efficient campaigns with real budgets.
 - **Alternatives considered**: commission only (hides efficiency); ROI only (tiny tests win); a fixed dollar threshold (rejected: the median adapts if the data changes).
-- **Status**: Accepted by mae (2026-10-20). Open question: ROI is computed on sales revenue; if campaign spend is the creator's own money, it should use commission instead.
+- **Status**: Accepted by mae (2026-10-20). ROI stays computed on sales revenue rather than commission; mae confirmed on 2026-10-20 that it doesn't need to switch to commission.
 
 ---
 

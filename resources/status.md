@@ -16,5 +16,4 @@
 
 ## Next (see `resources/design-spec.md` §8 for what each item contains)
 
-1. Open decision: ROI is computed on sales revenue. If campaign spend is the creator's own money, switch it to commission (see `resources/decisions.md`).
-2. Optional: monthly trend sparklines from `monthlySeries` (data is there, nothing renders it yet).
+1. Optional: monthly trend sparklines from `monthlySeries` (data is there, nothing renders it yet).
