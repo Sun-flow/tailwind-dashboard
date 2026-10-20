@@ -63,6 +63,7 @@ Write every class light-first with its `dark:` pair. Use these pairs and nothing
 | Hover row | `hover:bg-gray-50 dark:hover:bg-slate-700/40` |
 | Focus ring | `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500` |
 | Active nav link | `text-sky-700 dark:text-sky-400` |
+| Alert severity pill | high `bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300`; medium `bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300`; low `bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300` |
 
 ### KPI accents (one per KPI category, nothing else)
 
@@ -73,7 +74,7 @@ Write every class light-first with its `dark:` pair. Use these pairs and nothing
 | Engagement | violet | `bg-violet-100 dark:bg-violet-500/20` | `#8b5cf6` (violet-500) |
 | Performance | indigo | `bg-indigo-100 dark:bg-indigo-500/20` | `#6366f1` (indigo-500) |
 
-A chart uses the accent of the metric it shows. Green and red are reserved for direction (trend badges, alerts).
+A chart uses the accent of the metric it shows. Green and red are reserved for direction (trend badges, alerts); amber is reserved for medium-severity alerts.
 
 ### Contrast
 
@@ -96,6 +97,9 @@ Font: Tailwind's default system sans-serif stack.
 - Currency: `$12,450` (no decimals) — `toLocaleString("en-US")`.
 - Percentages: one decimal place, `23.3%`. Percentage-point changes: `+0.5pt`.
 - Counts: thousands separators, `1,404`; large counts may be compacted, `3.3M`.
+- Ratios (ROI): one decimal and an `x`, `2.8x`.
+- Months: `Oct 2026`.
+- A value that doesn't apply (e.g. saves on YouTube) shows a muted `—`.
 - Numeric table columns are right-aligned with `tabular-nums`.
 
 ## 5. Layout and breakpoints
@@ -131,7 +135,12 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 | `kpiCard({label, value, sub, delta, accent, icon})` | Card with label + icon chip on one row, the KPI value, then the badge and a muted sub-line |
 | `trendBadge(value, unit)` | Pill: `inline-flex items-center gap-0.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium` + up `bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300` or down `bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300`; text `▲ 32.8%` / `▼ 4.1%`, with `aria-label` "up 32.8% vs last month" |
 | `barChart({label, rows, color})` | Charts.css bar chart (see §7) inside a `card()` |
-| `dataTable({columns, rows})` | Table inside `overflow-x-auto`: `w-full text-sm`; header row as tokens; `th`/`td` `px-3 py-3 whitespace-nowrap`; numeric columns `text-right tabular-nums` |
+| `barChart({title, ...})` options | `charts: [...]` stacks several charts under their own subtitles (used for product commission + conversion rate); `table` adds a breakdown table under the chart; `breakdown` adds a "Label: detail" list; `note` adds a muted footnote |
+| `table({columns, rows})` | Table inside a focusable `overflow-x-auto` region: `w-full text-sm`; header row as tokens; `th`/`td` `px-3 py-3 whitespace-nowrap`; numeric columns `text-right tabular-nums`. A cell `{text, className, alerts}` shows `alertMarker()`s after its text. When columns overflow, a muted "Scroll sideways" hint appears under it |
+| `dataTable({title, columns, rows})` | `table()` inside a full-width `card()` (`lg:col-span-2`) |
+| `funnel({title, stages})` | Ordered list of stages: each a `bg-gray-50 dark:bg-slate-700/50 border-l-4 border-indigo-500 rounded-lg px-3 py-3` row with label and value, and a muted step-rate line |
+| `severityBadge(severity)` / `alertMarker(alert)` | Alert severity pill (§3). The marker adds ⚠, `role="img"` and an `aria-label` with the alert message, and sits next to the related table row |
+| `listCard({title, items, ordered})` / `list(...)` | Divided list; each item has an optional badge, text, muted meta line and right-aligned value. `ordered` numbers the items |
 
 ## 7. Charts.css usage
 
@@ -150,7 +159,7 @@ Each component is **one render function in `app.js`**. Never hand-copy a compone
 - Rows **must** sit inside `<tbody>`; Charts.css only styles `tbody tr`. When building with `createElement`, create the `<tbody>` explicitly.
 - `--size` is the value divided by the largest value, times 0.75, so the outside label of the biggest bar still fits at 375px.
 - Value labels get `whitespace-nowrap` so short bars don't wrap them.
-- Let the rows set the chart's height; don't wrap it in a fixed-height box.
+- Let the rows set the chart's height; don't wrap it in a fixed-height box. Charts.css sets `height: 100%`, so each chart sits in a plain `<div>`: otherwise it takes the height of the stretched grid card and pushes the content below it out of the card.
 - One series colour per chart: the accent of the metric shown.
 
 ## 8. Section content
@@ -165,17 +174,19 @@ Built from `resources/brief.md`. Items marked "No" are deliberately left out; do
 | KPIs | Performance | Yes | Card 4: conversion rate (conversions ÷ link clicks); sub-line: CTR |
 | KPIs | Efficiency | Partly | No card. ROI and cost per conversion appear in the tables. |
 | KPIs | Retention, Satisfaction | No | No data source for an affiliate influencer |
-| Drivers | Conversion by stage | Yes | Funnel: impressions → link clicks → conversions |
+| Drivers | Conversion by stage | Yes | Funnel: impressions → link clicks → conversions, each with its step rate. A stage list, not Charts.css bars: the stages differ by three orders of magnitude, so linear bars would hide conversions |
 | Drivers | Performance by platform | Yes | Bar chart: commission share per platform |
-| Drivers | Performance by product | Yes | Bar chart: commission and conversion rate per product |
-| Drivers | Activity | Yes | Posts, stories, reels and videos per platform |
-| Drivers | Engagement | Yes | Likes, comments, shares and saves per platform |
+| Drivers | Performance by product | Yes | Two bar charts in one card: commission (emerald) and conversion rate (indigo) per product |
+| Drivers | Activity | Yes | Bar chart of content pieces per platform (sky), with a "Platform: 144 stories · 52 reels or shorts" breakdown list |
+| Drivers | Engagement | Yes | Bar chart of engagement rate per platform (violet), with a likes / comments / shares / saves table and a footnote on how X and Twitch map onto those columns |
 | Drivers | Quality | No | Leads, attendance and pass rate don't apply |
 | Details | Products table | Yes | Product, price, units sold, revenue, commission, conversion rate, top channel |
 | Details | Platforms table | Yes | Reach, engagement rate, conversions, commission, ROI |
-| Details | Campaigns table | Yes | Dates, product, platform, spend, results, ROI |
+| Details | Campaigns table | Yes | Month, product, platform, spend, sales (results), ROI; newest first |
 | Details | Alerts | Yes | Conversion drops and spikes, shown next to the related row as well as in the list |
-| Details | Top lists | Yes | Top products, top platforms, top campaigns, improvement opportunities |
+| Details | Top lists | Yes | "Top Performers" card: top products, top 3 platforms, top 3 campaigns, all by commission. "Improvement Opportunities" is its own card |
+
+Card order. **Drivers**: Sales funnel, Commission share by platform, Performance by product, Activity by platform, Engagement by platform (the lone last card spans full width). **Details**: Alerts and Improvement opportunities side by side, then the Platforms, Products and Campaigns tables, then Top performers (full width, three columns from `md:`).
 
 ## 9. Theme toggle
 

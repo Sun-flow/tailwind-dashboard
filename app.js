@@ -32,7 +32,12 @@
     badge: "inline-flex items-center gap-0.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium",
     up: "bg-green-100 text-green-800 dark:bg-green-500/15 dark:text-green-300",
     down: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
-    activeNav: ["text-sky-700", "dark:text-sky-400"]
+    activeNav: ["text-sky-700", "dark:text-sky-400"],
+    severity: {
+      high: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300",
+      medium: "bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300",
+      low: "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-300"
+    }
   };
 
   var ACCENT = {
@@ -69,8 +74,41 @@
     return Number(value).toLocaleString("en-US", { notation: "compact", maximumFractionDigits: 1 });
   }
 
+  function ratio(value) {
+    return Number(value).toFixed(1) + "x";
+  }
+
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // "2026-05" -> "May 2026"
+  function month(ym) {
+    var parts = String(ym).split("-");
+    return MONTHS[Number(parts[1]) - 1] + " " + parts[0];
+  }
+
+  // Counts that don't apply on a platform are null and render as a dash.
+  function countOrDash(value) {
+    return value === null || value === undefined ? { text: "—", className: T.muted } : compact(value);
+  }
+
+  var ACTIVITY_TYPES = [
+    { key: "posts", label: "posts" },
+    { key: "stories", label: "stories" },
+    { key: "shorts", label: "reels or shorts" },
+    { key: "videos", label: "videos" },
+    { key: "streams", label: "streams" }
+  ];
+
   var platformName = {};
   DATA.platforms.forEach(function (p) { platformName[p.id] = p.name; });
+  var productName = {};
+  DATA.products.forEach(function (p) { productName[p.id] = p.name; });
+  var campaignById = {};
+  DATA.campaigns.forEach(function (c) { campaignById[c.id] = c; });
+
+  function alertsFor(key, id) {
+    return DATA.alerts.filter(function (a) { return a[key] === id; });
+  }
 
   /* ---------- components (design-spec §6) ---------- */
 
@@ -111,8 +149,7 @@
 
   // rows: [{ label, value, display }]. Bars are scaled to the largest value × 0.75
   // so the outside label of the longest bar still fits (design-spec §7).
-  function barChart(opts) {
-    var node = card(opts.title);
+  function chartTable(opts) {
     var max = 0;
     opts.rows.forEach(function (r) { if (r.value > max) max = r.value; });
 
@@ -135,17 +172,49 @@
       tbody.appendChild(row);
     });
     table.appendChild(tbody);
-    node.appendChild(table);
+    return table;
+  }
+
+  // One chart, or several stacked under their own subtitles (opts.charts),
+  // plus an optional breakdown table (opts.table) or list (opts.breakdown) underneath.
+  function barChart(opts) {
+    var node = card(opts.title);
+    (opts.charts || [opts]).forEach(function (c, i) {
+      if (c.subtitle) node.appendChild(el("p", "text-sm font-medium mb-2 " + (i ? "mt-6 " : "") + T.heading, c.subtitle));
+      // Charts.css sets height: 100%; an auto-height wrapper lets the rows set it
+      // instead of the stretched grid card (design-spec §7).
+      var wrap = el("div");
+      wrap.appendChild(chartTable(c));
+      node.appendChild(wrap);
+    });
+    if (opts.table) {
+      var breakdown = table(opts.table);
+      breakdown.className += " mt-6";
+      node.appendChild(breakdown);
+    }
+    if (opts.breakdown) {
+      var items = el("ul", "mt-6 space-y-1 text-sm");
+      opts.breakdown.forEach(function (b) {
+        var li = el("li");
+        li.appendChild(el("span", "font-medium " + T.heading, b.label + ": "));
+        li.appendChild(el("span", T.body, b.detail));
+        items.appendChild(li);
+      });
+      node.appendChild(items);
+    }
+    if (opts.note) node.appendChild(el("p", "mt-3 text-sm " + T.muted, opts.note));
     return node;
   }
 
-  // columns: [{ title, numeric }]; rows: arrays of cell strings, or { text, className } objects.
-  function dataTable(opts) {
-    var node = card(opts.title);
-    node.className += " lg:col-span-2";
-
-    var wrap = el("div", "overflow-x-auto");
-    var table = el("table", "w-full text-sm");
+  // columns: [{ title, numeric }]; rows: arrays of cell strings, or
+  // { text, className, alerts } objects. Alerts render as markers after the text.
+  function table(opts) {
+    // Focusable so keyboard users can scroll it sideways (design-spec §10).
+    var wrap = el("div", "overflow-x-auto rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500");
+    wrap.tabIndex = 0;
+    wrap.setAttribute("role", "region");
+    wrap.setAttribute("aria-label", opts.title || "Breakdown table");
+    var tableNode = el("table", "w-full text-sm");
 
     var thead = el("thead");
     var headRow = el("tr", "bg-gray-50 dark:bg-slate-700/50 " + T.label);
@@ -155,7 +224,7 @@
       headRow.appendChild(th);
     });
     thead.appendChild(headRow);
-    table.appendChild(thead);
+    tableNode.appendChild(thead);
 
     var tbody = el("tbody", "divide-y divide-gray-200 dark:divide-slate-700");
     opts.rows.forEach(function (cells) {
@@ -164,15 +233,99 @@
         var numeric = opts.columns[i].numeric;
         var text = typeof cell === "object" ? cell.text : cell;
         var extra = typeof cell === "object" ? cell.className : T.body;
-        tr.appendChild(el("td", "px-3 py-3 whitespace-nowrap " + (numeric ? "text-right tabular-nums " : "") + extra, text));
+        var td = el("td", "px-3 py-3 whitespace-nowrap " + (numeric ? "text-right tabular-nums " : "") + extra, text);
+        if (typeof cell === "object" && cell.alerts) {
+          cell.alerts.forEach(function (a) {
+            td.appendChild(document.createTextNode(" "));
+            td.appendChild(alertMarker(a));
+          });
+        }
+        tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
-    table.appendChild(tbody);
+    tableNode.appendChild(tbody);
 
-    wrap.appendChild(table);
-    node.appendChild(wrap);
+    wrap.appendChild(tableNode);
+    return wrap;
+  }
+
+  // Shows "scroll for more" under a table only while its columns overflow.
+  function scrollHints() {
+    Array.prototype.forEach.call(document.querySelectorAll("main .overflow-x-auto"), function (wrap) {
+      var hint = wrap.nextElementSibling;
+      if (!hint || !hint.hasAttribute("data-scroll-hint")) {
+        hint = el("p", "mt-2 text-sm " + T.muted, "Scroll sideways to see every column →");
+        hint.setAttribute("data-scroll-hint", "");
+        wrap.parentNode.insertBefore(hint, wrap.nextSibling);
+      }
+      hint.hidden = wrap.scrollWidth <= wrap.clientWidth;
+    });
+  }
+
+  function dataTable(opts) {
+    var node = card(opts.title);
+    node.className += " lg:col-span-2";
+    node.appendChild(table(opts));
     return node;
+  }
+
+  // stages: [{ label, value, rate }]. Stages span three orders of magnitude, so
+  // they are listed with their step rate instead of drawn as linear bars.
+  function funnel(opts) {
+    var node = card(opts.title);
+    var list = el("ol", "space-y-2");
+    opts.stages.forEach(function (s) {
+      var item = el("li", "rounded-lg border-l-4 border-indigo-500 bg-gray-50 dark:bg-slate-700/50 px-3 py-3");
+      var line = el("div", "flex items-baseline justify-between gap-3 text-sm");
+      line.appendChild(el("span", "font-medium " + T.body, s.label));
+      line.appendChild(el("span", "font-semibold tabular-nums " + T.heading, s.value));
+      item.appendChild(line);
+      if (s.rate) item.appendChild(el("p", "mt-1 text-sm " + T.muted, s.rate));
+      list.appendChild(item);
+    });
+    node.appendChild(list);
+    return node;
+  }
+
+  function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  function severityBadge(severity) {
+    return el("span", T.badge + " " + T.severity[severity], capitalize(severity));
+  }
+
+  // A small marker next to a table row's name, pointing at an alert in the list.
+  function alertMarker(alert) {
+    var marker = el("span", T.badge + " " + T.severity[alert.severity], "⚠ " + capitalize(alert.severity));
+    marker.setAttribute("role", "img");
+    marker.setAttribute("aria-label", alert.severity + " alert: " + alert.message);
+    marker.title = alert.message;
+    return marker;
+  }
+
+  // items: [{ text, meta, badge, value }]. ordered: true numbers the list.
+  function listCard(opts) {
+    var node = card(opts.title);
+    node.appendChild(list(opts));
+    return node;
+  }
+
+  function list(opts) {
+    var listNode = el(opts.ordered ? "ol" : "ul", "divide-y divide-gray-200 dark:divide-slate-700");
+    opts.items.forEach(function (item, i) {
+      var li = el("li", "flex items-start gap-3 py-3 first:pt-0 last:pb-0 text-sm");
+      if (opts.ordered) li.appendChild(el("span", "w-4 shrink-0 font-semibold tabular-nums " + T.muted, String(i + 1)));
+      if (item.badge) li.appendChild(item.badge);
+      var main = el("div", "min-w-0 flex-1");
+      main.appendChild(el("p", item.value ? "font-medium " + T.heading : T.body, item.text));
+      if (item.meta) main.appendChild(el("p", "mt-0.5 " + T.muted, item.meta));
+      li.appendChild(main);
+      if (item.value) li.appendChild(el("span", "shrink-0 font-semibold tabular-nums " + T.heading, item.value));
+      listNode.appendChild(li);
+    });
+    return listNode;
   }
 
   /* ---------- 1. KPI cards (design-spec §8: Revenue, Volume, Engagement, Performance) ---------- */
@@ -215,57 +368,233 @@
     ].forEach(function (c) { kpiGrid.appendChild(c); });
   }
 
-  /* ---------- 2. Drivers ---------- */
+  /* ---------- 2. Drivers (design-spec §8) ---------- */
 
   var driverGrid = document.getElementById("driver-grid");
   if (driverGrid) {
-    driverGrid.appendChild(barChart({
-      title: "Commission Share by Platform",
-      caption: "Share of total commission earned on each platform, in percent",
-      color: ACCENT.revenue.color,
-      rows: DATA.platforms.map(function (p) {
-        var share = derived.platformRevenueShare[p.id] || 0;
-        return { label: p.name, value: share, display: pct(share) };
+    [
+      funnel({
+        title: "Sales Funnel",
+        stages: [
+          { label: "Impressions", value: count(derived.totalImpressions) },
+          { label: "Link clicks", value: count(derived.totalLinkClicks), rate: pct(derived.overallCtr) + " of impressions clicked through" },
+          { label: "Conversions", value: count(derived.totalConversions), rate: pct(derived.overallConversionRate) + " of clicks bought" }
+        ]
+      }),
+      barChart({
+        title: "Commission Share by Platform",
+        caption: "Share of total commission earned on each platform, in percent",
+        color: ACCENT.revenue.color,
+        rows: DATA.platforms.map(function (p) {
+          var share = derived.platformRevenueShare[p.id] || 0;
+          return { label: p.name, value: share, display: pct(share) };
+        })
+      }),
+      barChart({
+        title: "Performance by Product",
+        charts: [
+          {
+            subtitle: "Commission",
+            caption: "Commission earned per product, in US dollars",
+            color: ACCENT.revenue.color,
+            rows: DATA.products.map(function (p) {
+              return { label: p.name, value: p.commission, display: usd(p.commission) };
+            })
+          },
+          {
+            subtitle: "Conversion rate",
+            caption: "Conversion rate per product, in percent of link clicks",
+            color: ACCENT.performance.color,
+            rows: DATA.products.map(function (p) {
+              return { label: p.name, value: p.conversionRate, display: pct(p.conversionRate) };
+            })
+          }
+        ]
+      }),
+      barChart({
+        title: "Activity by Platform",
+        caption: "Pieces of content published on each platform",
+        color: ACCENT.volume.color,
+        rows: DATA.platforms.map(function (p) {
+          var total = derived.activityByPlatform[p.id].total;
+          return { label: p.name, value: total, display: count(total) };
+        }),
+        breakdown: DATA.platforms.map(function (p) {
+          var a = derived.activityByPlatform[p.id];
+          var parts = [];
+          ACTIVITY_TYPES.forEach(function (t) {
+            if (a[t.key] !== null) parts.push(count(a[t.key]) + " " + t.label);
+          });
+          return { label: p.name, detail: parts.join(" · ") };
+        })
+      }),
+      barChart({
+        title: "Engagement by Platform",
+        caption: "Engagement rate on each platform, in percent",
+        color: ACCENT.engagement.color,
+        rows: DATA.platforms.map(function (p) {
+          return { label: p.name, value: p.engagementRate, display: pct(p.engagementRate) };
+        }),
+        table: {
+          title: "Interactions by platform",
+          columns: [
+            { title: "Platform" },
+            { title: "Likes", numeric: true },
+            { title: "Comments", numeric: true },
+            { title: "Shares", numeric: true },
+            { title: "Saves", numeric: true }
+          ],
+          rows: DATA.platforms.map(function (p) {
+            var e = derived.interactionsByPlatform[p.id];
+            return [
+              { text: p.name, className: "font-medium " + T.heading },
+              countOrDash(e.likes), countOrDash(e.comments), countOrDash(e.shares), countOrDash(e.saves)
+            ];
+          })
+        },
+        note: "X counts replies as comments, reposts as shares and bookmarks as saves. Twitch counts chat messages as comments."
       })
-    }));
+    ].forEach(function (c) { driverGrid.appendChild(c); });
   }
 
-  /* ---------- 3. Operational details ---------- */
+  /* ---------- 3. Operational details (design-spec §8) ---------- */
 
   var detailGrid = document.getElementById("detail-grid");
   if (detailGrid) {
-    detailGrid.appendChild(dataTable({
-      title: "Products",
-      columns: [
-        { title: "Product" },
-        { title: "Price", numeric: true },
-        { title: "Units Sold", numeric: true },
-        { title: "Revenue", numeric: true },
-        { title: "Commission", numeric: true },
-        { title: "Conv. Rate", numeric: true },
-        { title: "Top Channel" }
-      ],
-      rows: DATA.products.map(function (prod) {
-        var topChannelId = null;
-        var topChannelVal = -1;
-        Object.keys(prod.platformShare || {}).forEach(function (plId) {
-          if (prod.platformShare[plId] > topChannelVal) {
-            topChannelVal = prod.platformShare[plId];
-            topChannelId = plId;
-          }
-        });
-        return [
-          { text: prod.name, className: "font-medium " + T.heading },
-          usd(prod.price),
-          count(prod.unitsSold),
-          { text: usd(prod.revenue), className: "font-medium " + T.heading },
-          { text: usd(prod.commission), className: "font-medium " + T.heading },
-          pct(prod.conversionRate),
-          platformName[topChannelId] || topChannelId
-        ];
+    var alertsCard = listCard({
+      title: "Alerts",
+      items: DATA.alerts.map(function (a) {
+        var where = [month(a.month)];
+        if (a.platformId) where.push(platformName[a.platformId]);
+        if (a.productId) where.push(productName[a.productId]);
+        if (a.campaignId) where.push("Campaign: " + campaignById[a.campaignId].name);
+        return { badge: severityBadge(a.severity), text: a.message, meta: where.join(" · ") };
       })
-    }));
+    });
+    alertsCard.id = "alerts";
+
+    var topCard = card("Top Performers");
+    topCard.className += " lg:col-span-2";
+    var topGrid = el("div", "grid gap-6 md:grid-cols-3");
+    [
+      {
+        subtitle: "Products by commission",
+        items: derived.rankings.products.map(function (id) {
+          var p = DATA.products.filter(function (x) { return x.id === id; })[0];
+          return { text: p.name, value: usd(p.commission) };
+        })
+      },
+      {
+        subtitle: "Platforms by commission",
+        items: derived.rankings.platforms.slice(0, 3).map(function (id) {
+          var p = DATA.platforms.filter(function (x) { return x.id === id; })[0];
+          return { text: p.name, value: usd(p.commission) };
+        })
+      },
+      {
+        subtitle: "Campaigns by commission",
+        items: derived.rankings.campaigns.slice(0, 3).map(function (id) {
+          var c = campaignById[id];
+          return { text: c.name, meta: month(c.period) + " · " + ratio(c.roi) + " ROI", value: usd(c.commission) };
+        })
+      }
+    ].forEach(function (group) {
+      var col = el("div", "min-w-0");
+      col.appendChild(el("p", "text-sm font-medium mb-3 " + T.heading, group.subtitle));
+      col.appendChild(list({ ordered: true, items: group.items }));
+      topGrid.appendChild(col);
+    });
+    topCard.appendChild(topGrid);
+
+    [
+      alertsCard,
+      listCard({
+        title: "Improvement Opportunities",
+        items: derived.opportunities.map(function (o) { return { text: o.message }; })
+      }),
+      dataTable({
+        title: "Platforms",
+        columns: [
+          { title: "Platform" },
+          { title: "Reach", numeric: true },
+          { title: "Eng. Rate", numeric: true },
+          { title: "Conversions", numeric: true },
+          { title: "Commission", numeric: true },
+          { title: "ROI", numeric: true }
+        ],
+        rows: DATA.platforms.map(function (p) {
+          return [
+            { text: p.name, className: "font-medium " + T.heading, alerts: alertsFor("platformId", p.id) },
+            compact(p.reach),
+            pct(p.engagementRate),
+            count(p.conversions),
+            { text: usd(p.commission), className: "font-medium " + T.heading },
+            ratio(p.roi)
+          ];
+        })
+      }),
+      dataTable({
+        title: "Products",
+        columns: [
+          { title: "Product" },
+          { title: "Price", numeric: true },
+          { title: "Units Sold", numeric: true },
+          { title: "Revenue", numeric: true },
+          { title: "Commission", numeric: true },
+          { title: "Conv. Rate", numeric: true },
+          { title: "Top Channel" }
+        ],
+        rows: DATA.products.map(function (prod) {
+          var topChannelId = null;
+          var topChannelVal = -1;
+          Object.keys(prod.platformShare || {}).forEach(function (plId) {
+            if (prod.platformShare[plId] > topChannelVal) {
+              topChannelVal = prod.platformShare[plId];
+              topChannelId = plId;
+            }
+          });
+          return [
+            { text: prod.name, className: "font-medium " + T.heading, alerts: alertsFor("productId", prod.id) },
+            usd(prod.price),
+            count(prod.unitsSold),
+            { text: usd(prod.revenue), className: "font-medium " + T.heading },
+            { text: usd(prod.commission), className: "font-medium " + T.heading },
+            pct(prod.conversionRate),
+            platformName[topChannelId] || topChannelId
+          ];
+        })
+      }),
+      dataTable({
+        title: "Campaigns",
+        columns: [
+          { title: "Campaign" },
+          { title: "Month" },
+          { title: "Product" },
+          { title: "Platform" },
+          { title: "Spend", numeric: true },
+          { title: "Sales", numeric: true },
+          { title: "ROI", numeric: true }
+        ],
+        rows: DATA.campaigns.slice().sort(function (a, b) {
+          return a.period < b.period ? 1 : a.period > b.period ? -1 : 0;
+        }).map(function (c) {
+          return [
+            { text: c.name, className: "font-medium " + T.heading, alerts: alertsFor("campaignId", c.id) },
+            month(c.period),
+            productName[c.productId],
+            platformName[c.platformId],
+            usd(c.spend),
+            count(c.conversions),
+            { text: ratio(c.roi), className: "font-medium " + T.heading }
+          ];
+        })
+      }),
+      topCard
+    ].forEach(function (c) { detailGrid.appendChild(c); });
   }
+
+  scrollHints();
+  window.addEventListener("resize", scrollHints, { passive: true });
 
   /* ---------- 4. Footer meta ---------- */
 
