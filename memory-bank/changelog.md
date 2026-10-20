@@ -10,9 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Mock data GENERATED — schema v1.0 delivered** (2026-10-20):
+  - `scripts/generate-data.py` — **NEW**: deterministic seeded Python generator (`random.Random(seed)`, default `20261020`) that enforces internal invariants (commission = revenue × 0.15, revenue = units × price, rollups == rows, monthly sums, referential integrity, numeric finiteness) and writes a committed static `data.js`. Cleanup: strips all private keys (`_aud`/`_mth_f`/`_ext`/`_rev`/`_roi`) before render; `meta.seed` reflects the actual seed.
+  - `data.js` — **NEW**: the single mock-data module exposing `window.DATA` (schema v1.0): 3 products (with categories lifestyle/premium/starter), 5 platforms (each with platform-specific metric extensions), 10 campaigns (2 per platform), 10 monthly rows (2026-01→10), 4 alerts, 2 13-key derived rollups block. Byte-identical across runs; all invariant checks PASS; 0 leaked internal keys.
+  - `resources/mock-data-plan.md` — §7 **ALL 6 approval questions resolved by client** → generation path complete, handed off to Phase 2.
+  - `resources/decisions.md` — **6 new ADC entries** (global `window.DATA` load pattern; deterministic seeded Python generator; precomputed derived rollups; 10 campaigns; product categories; 10-month span) — total 10 entries.
+  - `AGENTS.md` — key-files table: added `data.js` + `scripts/generate-data.py` rows.
+  - `resources/development-rollout-todo.md` — task 1.1 (mock data schema) marked **DONE** (approved + generated).
 - **Mock data plan — schema + generation method** (2026-10-20):
   - `resources/mock-data-plan.md` — **NEW**: research-backed schema for the single `data.js` module (products, platforms with per-platform metric extensions, campaigns with attribution windows, monthly series, alerts, derived KPI rollups) mapped to the 3 dashboard blocks, plus recommended deterministic generation method (`scripts/generate-data.py`, seeded `random.Random`, invariant checks, no-build-step-safe). Satisfies rollout task 1.1 + rule B5.
-  - `resources/development-rollout-todo.md` — task 1.1 (mock data schema) marked **DONE (draft)**, awaiting approval before generating `data.js`
+  - `resources/development-rollout-todo.md` — task 1.1 (mock data schema) scoped; superseded by the fully-DONE note in the entry above on 2026-10-20
 - **Rules proposal FINALIZED + landed** (2026-10-20):
   - `resources/agent-rules-proposal.md` — status set to **FINALIZED**; all §E open questions resolved and binding (theme: dark default + light toggle; data: `data.js` module; nav: keep inline anchor nav; verification: B4 gate + new B4.5 HTML sanity check)
   - `resources/decisions.md` — **NEW** ADC (Architecture Decision Context) log with 4 accepted entries (dark theme + toggle, `data.js` module, sticky inline anchor nav, verification gate)

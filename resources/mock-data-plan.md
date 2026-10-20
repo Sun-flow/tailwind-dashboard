@@ -313,11 +313,19 @@ Generated `data.js` must satisfy the verification gate (B4.5) and feed the Phase
 
 ## 7. Open Questions for Approval
 
-1. **Load pattern**: go with **Option A (global `window.DATA`)** as recommended? (Alternative: ES module.)
-2. **Generator language**: **Python** (`scripts/generate-data.py`) as recommended, or JS (`generate-data.mjs`)?
-3. **Derived-storage**: precompute derived rollups on records (recommended, keeps renderers dumb) vs. compute in `app.js`? (Recommend: **precompute** — matches "renderers consume only".)
-4. **Campaign count**: generate **8–10 campaigns** by default (I propose 10). Good?
-5. **Category**: should products carry a `category` label (lifestyle/premium/starter) or stay generic Product A/B/C? (Nice cosmetic touch, cheap.)
-6. **Time span**: 10 months (2026-01 → 10) OK for trend arrows + sparklines?
+> **Status: ALL RESOLVED — Approved 2026-10-20** (client answered inline below).
 
-Once approved, I'll: (a) add `scripts/generate-data.py`, (b) generate `data.js`, (c) run the generator's invariant checks, and (d) hand off to Phase 2 tooling tasks.
+1. **Load pattern**: go with **Option A (global `window.DATA`)** as recommended? (Alternative: ES module.)
+- **option A** ✅
+2. **Generator language**: **Python** (`scripts/generate-data.py`) as recommended, or JS (`generate-data.mjs`)?
+- **python** ✅
+3. **Derived-storage**: precompute derived rollups on records (recommended, keeps renderers dumb) vs. compute in `app.js`? (Recommend: **precompute** — matches "renderers consume only".)
+- **precompute** ✅
+4. **Campaign count**: generate **8–10 campaigns** by default (I propose 10). Good?
+- **seems fine → 10** ✅
+5. **Category**: should products carry a `category` label (lifestyle/premium/starter) or stay generic Product A/B/C? (Nice cosmetic touch, cheap.)
+- **give them categories** ✅
+6. **Time span**: 10 months (2026-01 → 10) OK for trend arrows + sparklines?
+- **sounds good** ✅
+
+**Delivery summary (2026-10-20)**: (a) `scripts/generate-data.py` added ✅, (b) `data.js` generated (19 KB→16.7 KB after cleanup) ✅, (c) generator's invariant checks all **PASS** ✅, (d) handed off to Phase 2 tooling tasks ✅. Determined deterministic: same seed → byte-identical `data.js`.

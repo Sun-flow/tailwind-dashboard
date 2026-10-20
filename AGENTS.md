@@ -18,6 +18,8 @@ A **Tailwind CSS dashboard** for tracking income, revenue, and engagement metric
 | `resources/profile.md` | **Client profile** — who we're building for, their goals, products, platforms. |
 | `generate-profile-insights.md` | Planning doc used to generate `resources/profile.md`. |
 | `server.py` | Flask development server (port 3000). |
+| `data.js` | **Generated mock data module** — exposes `window.DATA` (schema v1.0). Do not hand-edit; regenerate with `python3 scripts/generate-data.py`. |
+| `scripts/generate-data.py` | **Mock data generator** — deterministic seeded Python that writes `data.js` (invariant-checked). See `resources/mock-data-plan.md`. |
 | `prompt-memory-bank-generator.md` | Spec for initializing the memory bank later. |
 | `index.html` | *(to be created)* Main dashboard page. |
 

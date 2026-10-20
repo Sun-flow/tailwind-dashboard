@@ -1,9 +1,13 @@
 # Current Status
 
 > **Date**: 2026-10-20
-> **Last session**: Rules proposal FINALIZED + landed into `.agents/rules/`, `AGENTS.md`, `dashboard-design.md`
+> **Last session**: Mock data APPROVED + GENERATED — `scripts/generate-data.py` + `data.js` (schema v1.0, invariants PASS)
 
 ---
+
+## Project Story
+
+Building a **Tailwind CSS dashboard** for a multi-platform influencer (5 platforms, 3 products, 15% commission) with a static HTML/CSS/JS frontend served by a Flask dev server. Three-block layout (KPIs → Drivers → Details), dark-first theme with a future light toggle, single `data.js` mock module, no build step.
 
 ## What Works
 
@@ -20,7 +24,7 @@
 - `resources/development-rollout-todo.md` — **NEW (2026-10-20)** prioritized to-do list for implementation
 - `resources/repo-alignment-audit.md` — **NEW (2026-10-20)** full docs survey + repo alignment + guidelines audit
 - `resources/agent-rules-proposal.md` — **NEW, now FINALIZED (2026-10-20)** — all §E open questions resolved and binding
-- `resources/decisions.md` — **NEW (2026-10-20)** ADC log with 4 accepted entries
+- `resources/decisions.md` — **NEW (2026-10-20)** ADC log with 10 accepted entries (theme, data.js module, inline nav, verification gate + 6 mock-data-generation decisions)
 - `server.py` — Flask dev server functional and tested
 - `memory-bank/` — 5 core files + 12 review files in `review-edits/`
 
@@ -46,7 +50,7 @@
 | # | Gap | Priority | Notes |
 |---|---|---|---|
 | 1 | `index.html` does not exist yet | 🔴 Blocking | The main dashboard page has not been built. All design work is in planning docs only. First vertical slice is the next implementation milestone (Phase 2 of rollout todo). |
-| 2 | No mock data file (`data.js`) exists | 🔴 Blocking | Location decided (`data.js`); **schema drafted** in `resources/mock-data-plan.md` — awaiting approval before generation |
+| 2 | ~~No mock data file (`data.js`) exists~~ | ~~🔴~~ ✅ **DONE** | **`data.js` generated 2026-10-20** by `scripts/generate-data.py` (seed 20261020), schema v1.0 — 3 products, 5 platforms, 10 campaigns, 10 monthly rows, 4 alerts, derived rollups; all invariant checks PASS |
 | 3 | No charts rendered | 🟠 Should-fix | Chart CSS approach selected but not implemented |
 | 4 | No data tables implemented | 🟠 Should-fix | Products, platforms, and campaigns tables exist only in design docs |
 | 5 | Sticky inline anchor nav not built | 🟡 Nice-to-have | Approach B defined and documented; part of vertical slice |
@@ -60,8 +64,8 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 |---|---|---|---|
 | 7 | No `requirements.txt` | 🟢 Low | Phase 0.5 of rollout todo; add a single `flask` entry |
 | 8 | No CI workflows | 🟢 Low | Not needed at current stage (smoke check is shell command, not CI) |
-| 9 | ADC log created | ✅ DONE | `resources/decisions.md` — 4 entries logged (theme, data.js, nav, verification) |
-| 10 | Mock data **schema** | 🟡 DRAFTED | **#1 blocker was the undefined schema** → `resources/mock-data-plan.md` (2026-10-20): schema + research + deterministic generator. Awaiting approval before generating `data.js` |
+| 9 | ADC log created | ✅ DONE | `resources/decisions.md` — 10 entries logged (theme, data.js, nav, verification + 6 data-generation decisions) |
+| 10 | Mock data **schema** | ✅ DONE | **schema v1.0 approved + data.js generated 2026-10-20** — `resources/mock-data-plan.md` all 6 approval questions answered by client; `scripts/generate-data.py` (seeded, deterministic) writes `data.js`; invariant checks PASS |
 | 11 | Theme | ✅ RESOLVED | Dark default + light toggle (toggle = future implementation item) |
 | 12 | `components.md` nav conflict | ✅ RESOLVED | Re-worded: no overlay menus, sticky inline anchor nav (Approach B) |
 | 13 | `.agents/scripts/init.sh` stale | 🟠 | Pre-memory-bank state; update or archive in Phase 0 repo alignment |
@@ -72,18 +76,17 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 
 ## Next Priorities (supersedes earlier list → see `resources/development-rollout-todo.md`)
 
-1. **🔴 Draft + finalize proposed agent rules** — `resources/agent-rules-proposal.md`; land edits per its §D
-2. **🔴 Reconcile rule/docs drift** — nav, theme, no-build-step, `components.md`
-3. **� Drafted → awaiting approval**: mock data schema — `resources/mock-data-plan.md` (global `DATA`, 5 platforms, 3 products, campaigns, monthly series, alerts, derived rollups; seeded `generate-data.py`)
-4. **🟠 Scaffold `index.html`** — three-block shell + sticky nav + one vertical slice + verify loop
-5. **🟠 Chart CSS data model** — validate actual v1 markup idiom before writing charts
-6. **🟡 Refresh `init.sh`**, archive scratchpads, add `requirements.txt`
+1. **🔴 Scaffold `index.html`** (Phase 2.1) — three-block shell + sticky anchor nav + `scroll-mt`; then Phase 2.2: ONE KPI card + ONE data table + ONE Chart CSS bar consuming `window.DATA`
+2. **🟠 Chart CSS data model** — validate actual v1 markup idiom before writing charts (rule: don't "innovate" the library's contract)
+3. **🟠 Run the dev server** (`python3 server.py`) at 375/768/1024px, smoke check (curl 200) per verification gate
+4. **🟠 Theme toggle implement** — dark default ships; light toggle = future item
+5. **🟡 Refresh `init.sh`**, archive scratchpads, add `requirements.txt`
 
 ---
 
 ## Current Sprint Theme
 
-**Phase: Design & Planning → Pre-dev Audit → Implementation.** Rules landed + committed. Mock data plan (schema + generation) drafted 2026-10-20 and awaiting approval; next once approved: generator + `data.js`, then Phase 2 first vertical slice of `index.html`.
+**Phase: Design & Planning → Implementation.** Mock data **approved + generated** (`data.js`, invariant-checked, committed). Current focus: **Phase 2 first vertical slice** — scaffold `index.html` + one KPI card + one table + one Chart CSS bar consuming `window.DATA`, verify at 3 breakpoints.
 
 ---
 
@@ -95,3 +98,4 @@ New priorities supersede earlier gap list; align with `resources/development-rol
 | 2026-10-19 | Design planning | `resources/dashboard-design.md`, `generate-dashboard-guidelines.md` created |
 | 2026-10-19 | Memory bank init | `memory-bank/` with 5 core files created; cross-validation pass completed ✅ |
 | 2026-10-20 | Pre-development survey | Surveyed all docs; audited online agent guidelines; created `resources/development-rollout-todo.md`, `resources/repo-alignment-audit.md`, `resources/agent-rules-proposal.md` |
+| 2026-10-20 | Mock data generated | Plan **approved** by client (all 6 questions answered); `scripts/generate-data.py` written; `data.js` generated (invariants PASS, deterministic, no internal-key leaks); rollout 1.1 → DONE; docs/memory updated |

@@ -35,3 +35,51 @@
 - **Rationale**: Aligns with the "give the agent a way to verify its work" best practice. The HTML sanity check is a dependency-free shell/`node` one-liner — no external validator in the committed loop. (src: `resources/agent-rules-proposal.md` §B4, §B4.5)
 - **Alternatives considered**: `npx html-validate` (deferred until the build stabilizes — keeps the gate dependency-free).
 - **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Global `window.DATA` load pattern (plain script, not an ES module)
+- **Decision**: `data.js` assigns to a global `window.DATA` and is loaded with a plain `<script src="data.js">` before `app.js` — **not**`type="module"`.
+- **Rationale**: Rule B5 requires one shared data module for API-readiness; a global object (mock-data-plan §7 "Load pattern" Option A) lets `app.js` load with a plain tag, keeping CDN + vanilla-JS constraints (no bundler, no `import` path resolution) and keeping the data layer trivially swappable. Approved by client ("option A").
+- **Alternatives considered**: ES module `import` (rejected — requires `type="module"` on the app script and strict CORS/ordering for a local file; no bundler in the no-build-step stack).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Deterministic seeded Python generator for mock data
+- **Decision**: Mock data is produced by `scripts/generate-data.py` (Python 3, `random.Random(seed)`) writing a **committed static `data.js`** — not generated at runtime, not JS.
+- **Rationale**: A dev-time tool keeps the committed artifact byte-identical across runs (same seed → same file), enforces invariant checks before writing (never commit bad/leaky data), and does **not** violate the no-build-step rule (mock-data-plan §5.2 decision). Approved by client ("python").
+- **Alternatives considered**: JS generator (rejected — Python is already in the toolchain for `server.py`, and the output is static regardless of language); runtime generation in `server.py` (rejected — breaks determinism and adds a build step).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Precomputed derived rollups in `data.js`
+- **Decision**: KPI rollups (`derived.*`: total commission/revenue, per-platform/product revenue share, MoM deltas, top product/platform, avg ER, overall ROI, units sold, conversions) are **computed at generation time** and stored in `data.js`; renderers only read.
+- **Rationale**: Matches "renderers consume only" from `dashboard-design.md` — the single data source answers the 5 core questions without duplicating business logic in `app.js` (mock-data-plan §7 "Derived-storage"). Approved by client ("precompute").
+- **Alternatives considered**: computing in `app.js` (rejected — scatters business logic, two places to keep in sync).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] 10 campaigns by default (2 per platform)
+- **Decision**: The dataset ships exactly **10 campaigns** — 2 per platform (one pushed "tag push", one organic) — each tied to one product with its own budget/spend/ROI/funnel.
+- **Rationale**: Gives the Details-block campaigns table enough rows to be meaningful without drowning a demo; 2 per platform keeps referral/funnel invariants (campaign revenue ≤ platform revenue) easy to guarantee. Approved by client ("seems fine" → 10).
+- **Alternatives considered**: 8 (same structure, fewer rows); 12+ (rejected — clutter for a demo dataset).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] Product categories (lifestyle / premium / starter)
+- **Decision**: The 3 products carry a `category` label: **prod-a = lifestyle ($50)**, **prod-b = premium ($120)**, **prod-c = starter ($80)**.
+- **Rationale**: Cheap cosmetic touch used by the product-comparison block (color/legend/grouping) and makes product mix readable; prices unchanged from `resources/profile.md`. Approved by client ("give them categories").
+- **Alternatives considered**: generic A/B/C only (rejected — flat and no design hooks for comparison).
+- **Status**: Accepted (2026-10-20).
+
+---
+
+### [2026-10-20] 10-month reporting span (2026-01 → 2026-10)
+- **Decision**: `monthlySeries` covers **10 months**: `2026-01` → `2026-10`, anchor month 2026-10.
+- **Rationale**: Long enough for meaningful trend arrows + MoM deltas + future sparklines without ballooning the file; end-of-period 2026-10 is a realistic "today" for a demo. Approved by client ("sounds good").
+- **Alternatives considered**: 12 months (rejected — 2 extra rows of marginal value, larger diff); 3–6 months (rejected — too short for a trend story).
+- **Status**: Accepted (2026-10-20).

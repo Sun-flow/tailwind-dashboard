@@ -11,9 +11,9 @@
 |---|---|---|
 | `memory-bank/project-overview.md` | What this project is (goals, scope, boundaries, DoD, architecture, key files) | 2026-10-19 |
 | `memory-bank/tech-stack.md` | Languages, frameworks, deps, tooling, CI, commands, constraints | 2026-10-19 |
-| `memory-bank/current-status.md` | What works, gaps/blockers, next priorities, session history | 2026-10-19 |
-| `memory-bank/document-plan.md` | **🔵 You are here** — file inventory and maintenance rules | 2026-10-19 |
-| `memory-bank/changelog.md` | Human-readable change history (Keep-a-Changelog format) | 2026-10-19 |
+| `memory-bank/current-status.md` | What works, gaps/blockers, next priorities, session history | 2026-10-20 |
+| `memory-bank/document-plan.md` | **🔵 You are here** — file inventory and maintenance rules | 2026-10-20 |
+| `memory-bank/changelog.md` | Human-readable change history (Keep-a-Changelog format) | 2026-10-20 |
 
 ## Root Files
 
@@ -51,6 +51,8 @@
 | `resources/agent-rules-proposal.md` | **NEW (2026-10-20)** — draft agent rules proposal | `current-status.md` |
 | `resources/decisions.md` | **NEW (2026-10-20)** — ADC log (theme, data.js, nav, verification) | `current-status.md` |
 | `resources/mock-data-plan.md` | **NEW (2026-10-20)** — mock data schema + research + generation method | `current-status.md`, `development-rollout-todo.md` |
+| `data.js` | **GENERATED (2026-10-20)** — mock data module exposing `window.DATA`, schema v1.0 (do not hand-edit; regenerate with `scripts/generate-data.py`) | `AGENTS.md` |
+| `scripts/generate-data.py` | **NEW (2026-10-20)** — deterministic seeded generator writing `data.js` (invariant-checked) | `AGENTS.md`, `resources/mock-data-plan.md` |
 
 ## Review & Validation Files
 
