@@ -119,6 +119,7 @@ Rules:
 - Interactive elements are at least 44×44px (`min-h-11`, plus padding).
 - Each anchored `<section>` has `scroll-mt-20` so the sticky header doesn't cover its heading.
 - Grid for page and card layout; flex inside components.
+- In a 2-column block (Drivers, Details), a card left alone on the last row spans the full width: `lg:*:last:odd:col-span-2` on the grid. Full-width tables still set `lg:col-span-2` themselves.
 
 ## 6. Components
 
