@@ -1,8 +1,6 @@
 # Memory Bank: Generation and Maintenance Prompt
 
-> **What this is**: a project-agnostic prompt for any AI coding agent. Point an agent at it to **create** a memory bank in a repo, to **reconcile** one that has drifted, or as the standing rules for **maintaining** one. Copy this file to a new repo unchanged; everything project-specific goes in the bank itself.
->
-> **Successor to** `archive/prompt-memory-bank-generator.md` (2026-10-19). What changed and why is at the end.
+> **What this is**: a project-agnostic prompt for any AI coding agent. Point an agent at it to **create** a memory bank in a repo, to **reconcile** one that has drifted, or as the standing rules for **maintaining** one. To use it in a new repo, copy this file to `.agents/prompts/memory-bank.md` and `scripts/check-memory.py` beside it, then tell the agent: "Read `.agents/prompts/memory-bank.md` and set up a memory bank for this repo." Both files work unchanged; everything project-specific goes in the bank itself.
 
 ---
 
@@ -91,7 +89,7 @@ When someone says "update the memory bank", reconcile **every** file against the
 2. **Find the sources of truth** that already exist and decide what the bank will adopt and what it will point to.
 3. **Create** `memory-bank/` with the five files, filled only from what you verified. Use ❓ for the rest.
 4. **Wire** `AGENTS.md`, `CLAUDE.md` and any other tool pointers.
-5. **Add a check** if the repo can run one: a small script that fails on any path the bank or `AGENTS.md` mentions that doesn't exist, on any `memory-bank/` file missing from the map, and on files over budget. Mechanical checks catch drift better than review rituals.
+5. **Add the check.** If `scripts/check-memory.py` came with this prompt, keep it and run it (it needs only Python 3). If not, and the repo can run one, write a small script that fails on any path the bank or `AGENTS.md` mentions that doesn't exist, on any `memory-bank/` file missing from the map, and on files over budget. Mechanical checks catch drift better than review rituals.
 6. **Read it cold.** Start a fresh session (or a subagent with no context), have it read only the entry point and the bank, and ask it: what is this project, what works, what's next, and how do I run it? Fix whatever it gets wrong or can't answer.
 
 ## Definition of done
@@ -101,20 +99,3 @@ When someone says "update the memory bank", reconcile **every** file against the
 - [ ] `AGENTS.md` sends agents to the bank first and says how to maintain it; `CLAUDE.md` points to `AGENTS.md`.
 - [ ] The check passes, if there is one.
 - [ ] A cold read answers: what this is, what works, what's next, how to run it.
-
----
-
-## What changed from the first version, and why
-
-The first prompt got the core right: an amnesiac agent needs durable, evidence-based files, read at every start, with each fact in one place. In use, it produced ceremony that cost more than it saved.
-
-| First version | Now | Why |
-|---|---|---|
-| Cite `file:line` evidence | Cite paths and sections | Line references broke on every edit and most review findings were about them. |
-| Two reviewer agents, review files per pass, re-run until green | One mechanical check plus a cold read | Twelve review files in one day; the check catches the same drift for free. |
-| `document-plan.md` inventory of every repo file | A map of the bank's own files only | The inventory copied `AGENTS.md` and drifted from it. |
-| Keep-a-Changelog `changelog.md` | `log.md` session handoffs | A changelog repeats git; a handoff says what's left open, which git doesn't. |
-| `project-overview.md` + `tech-stack.md` | `context.md` | Two files restated the design docs and each other. |
-| No place for preferences or gotchas | `notes.md` | The most expensive things to rediscover were the people's preferences and environment quirks. |
-| Read every file, every time | Read a fixed short path, then what the task needs | Fast orientation; files stay small so reading them is cheap. |
-| Single entry file | `AGENTS.md` plus one-line shims | Agents from different tools and environments all land in the same place. |

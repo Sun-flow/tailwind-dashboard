@@ -34,6 +34,9 @@ def path_exists(token, doc):
 
 
 def main():
+    if not (BANK / "README.md").exists():
+        print("FAIL  memory-bank/README.md is missing: set up the memory bank first")
+        return 1
     problems = []
     bank_files = sorted(BANK.glob("*.md"))
 
