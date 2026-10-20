@@ -1,8 +1,7 @@
 # AGENTS.md — Agent Entry Point
 
 > **For AI coding agents.** Read this file and every file it references at the start of every session.  
-> The memory bank has not been initialized yet — project rules and guidelines are established first.
-> See `memory-bank-generator-prompt.md` for the init workflow; run it when directed.
+> The memory bank (`memory-bank/`) is initialized and active. **Read all files in `memory-bank/` before doing any work in the repo.**
 
 ## Project: Influencer Dashboard
 
@@ -19,15 +18,19 @@ A **Tailwind CSS dashboard** for tracking income, revenue, and engagement metric
 | `resources/profile.md` | **Client profile** — who we're building for, their goals, products, platforms. |
 | `generate-profile-insights.md` | Planning doc used to generate `resources/profile.md`. |
 | `server.py` | Flask development server (port 3000). |
-| `memory-bank-generator-prompt.md` | Spec for initializing the memory bank later. |
+| `prompt-memory-bank-generator.md` | Spec for initializing the memory bank later. |
 | `index.html` | *(to be created)* Main dashboard page. |
 
 ## Mandate
 
-1. **Read-all-first**: at the start of every task or session, read `AGENTS.md`, every file in `.agents/rules/`, and `resources/profile.md`.
+1. **Read-all-first**: at the start of every task or session, read:
+   - `AGENTS.md` (you are here)
+   - Every file in `.agents/rules/`
+   - `resources/profile.md`
+   - **Every file in `memory-bank/`** (project overview, tech stack, current status, document plan, changelog)
 2. **Evidence-only**: every claim must be verified against the actual repository files. Cite `path/to/file:line`. Never fabricate.
-3. **Establish rules before bank**: project rules and conventions live in `.agents/rules/`. The memory bank (`memory-bank/`) is generated only when explicitly directed, using the workflow in `memory-bank-generator-prompt.md`.
-4. **Initialize the memory bank** only when told — it will consume `.agents/rules/`, `resources/profile.md`, and repo evidence to produce the core file set.
+3. **Memory bank is the source of truth**: project knowledge lives in `memory-bank/`. Agent behavioral rules live in `.agents/rules/`. Keep the separation — agent-facing vs human-facing, memory vs rules.
+4. **Update on triggers**: update `memory-bank/` after discovering new patterns, implementing significant changes, status changes, or when told "update memory bank".
 
 ## Quick Start
 
